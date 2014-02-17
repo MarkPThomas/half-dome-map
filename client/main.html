@@ -1,19 +1,18 @@
+<!doctype html>
+<html>
 <head>
   <title>half-dome-map-app</title>
+  <link rel="stylesheet" href="lib/leaflet.css" />
+  <link rel="stylesheet" href="map.css" />
+  <script src="lib/underscore-min.js"></script>
+  <script src="lib/leaflet.js"></script>
+  <script src="map.js"></script>
+  <script src="layers.js"></script>
 </head>
 
 <body>
-  {{> hello}}
-  {{> map}}
-</body>
-
-<template name="hello">
   <h1>Hello!</h1>
   <p>Welcome to the Half Dome Map App</p>
-</template>
-
-<template name="map">
-  {{#constant}}
-    <div id="map"></div>
-  {{/constant}}
-</template>
+  <div id="map"></div>
+</body>
+</html>
