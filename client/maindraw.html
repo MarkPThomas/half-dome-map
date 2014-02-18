@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <title>half-dome-map-app</title>
+  <link rel="stylesheet" href="lib/leaflet.css" />
+  <link rel="stylesheet" href="map.css" />
+  <script src="lib/underscore-min.js"></script>
+  <script src="lib/leaflet.js"></script>
+  <script src="lib/leaflet-editable-polygon.js"></script>
+  <script src="lib/leaflet-editable-polyline-unproject.js"></script>
+  <script src="map.js"></script>
+  <script src="layersdraw.js"></script>
+</head>
+
+<body>
+  <h1>Hello!</h1>
+  <p>Welcome to the Half Dome Map App</p>
+  <div id="map"></div>
+  
+  <br/> <br/>
+  <a href="javascript:void(dumpPoints())">Get points</a>
+
+  <br/> <br/>
+  <textarea id="pointsTextArea" rows="5" cols="70"></textarea>
+  
+     <script>
+        "use strict";
+        
+//        var coordinates = [
+//                [1000, 1000],
+//                [2000, 2000]
+//        ];
+
+//        var polylineStart = _polyline.PolylineEditor(coordinates, {maxMarkers: 100}).addTo(map);
+
+       // map.fitBounds(polylineStart.getBounds());
+
+        var dumpPoints = function() {
+            var pointsTextArea = document.getElementById('pointsTextArea');
+            pointsTextArea.innerHTML = '';
+            map.getEditablePolylines().forEach(function(polylineStart) {
+                var points = polylineStart.getPoints();
+                points.forEach(function(point) {
+                    var latLng = point.getLatLng();
+                    console.log(point.context);
+                    pointsTextArea.innerHTML += 'originalPointNo=' + (point.context ? point.context.originalPointNo : null)
+                                + ' originalPolylineNo=' + (point.context ? point.context.originalPolylineNo : null)
+                                + ' (' + latLng.lat + ',' + latLng.lng + ')\n';
+                                + '\n';
+                });
+                pointsTextArea.innerHTML += '----------------------------------------------------------------------------------------------------\n';
+            });
+        };
+
+    </script>
+  
+</body>
+</html>

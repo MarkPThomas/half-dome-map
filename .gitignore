@@ -11,3 +11,4 @@ settings.json
 TAGS
 .tern-*
 *.zip
+/client/plugins
