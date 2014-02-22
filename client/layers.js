@@ -7,6 +7,12 @@ _marker = function (coords, options) {
   return L.marker(unproject(coords), options);
 };
 
+
+// _markerDiv = function (coords, options) {
+ // options = _.extend({icon: myIcon}, options);
+  // return L.marker(unproject(coords), options);
+// };
+
 _circle = function (center, radius, options) {
   options = _.extend({}, options);
   return L.circle(unproject(center), radius, options);
@@ -26,28 +32,264 @@ _polyline = function (coordsList, options) {
   }), options);
 };
 
+// var setup = function (){
+ // var zoomLevel = map.getZoom();
+ // var _iconSizeX = 30*(1+(18-zoomLevel)), _iconSizeY = 36;
+ // var _iconSize = [_iconSizeX, _iconSizeY];
+
+   // map.on('zoomend', function(e){
+      // var zoomLevel = map.getZoom();
+      // var _iconSizeX = 30*(1+(18-zoomLevel)), _iconSizeY = 36;
+      // var _iconSize = [_iconSizeX, _iconSizeY];
+      // prepareLayers();
+      // });
+ // };
+ 
 var prepareLayers = function () {
+ // var zoomLevel = map.getZoom();
+ // var _iconSizeX = 30*(1+(18-zoomLevel)), _iconSizeY = 36;
+ 
+ // var _iconSize = [_iconSizeX, _iconSizeY];
+  // alert(zoomLevel);
+  // map.on('zoomend', function(e){
+      // var zoomLevel = map.getZoom();
+      // var _iconSizeX = 30*(1+(18-zoomLevel)), _iconSizeY = 36;
+      // alert(_iconSizeX);
+      // alert(_iconSizeY);
+      // var _iconSize = [_iconSizeX, _iconSizeY];
+      // alert(zoomLevel);
+      // return belays.addTo(map);
+      // });
+
+
   //Prepare PopUps
-  var pop1 = "<b>This is a marker</b><br> <a href=\"https://picasaweb.google.com/lh/photo/w2fL5fz4UoRzfWOUqeK9ldMTjNZETYmyPJy0liipFm0?feat=directlink\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-OPNp3bc7_G0/UibOVAjw6aI/AAAAAAACohs/bTELWpH-wLs/s300/2013-08-11%2520-%2520158a%2520-%2520Half%2520Dome%2520NWRR%2520-%2520IMG_2586.jpg\" /></a><br><b><i>P13, P14, and P15 (5.7, 5.7-5.9, 5.9) chimney pitches that I would link in one 230' pitch with our 70m rope. Good thing chimneys are easy to climb in the dark!</i></b>";
-  
+  var pop1 = "<h2>Pitch n</h2><a href=\"https://picasaweb.google.com/lh/photo/w2fL5fz4UoRzfWOUqeK9ldMTjNZETYmyPJy0liipFm0?feat=directlink\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-OPNp3bc7_G0/UibOVAjw6aI/AAAAAAACohs/bTELWpH-wLs/s300/2013-08-11%2520-%2520158a%2520-%2520Half%2520Dome%2520NWRR%2520-%2520IMG_2586.jpg\" /></a><br><b><i>P13, P14, and P15 (5.7, 5.7-5.9, 5.9) chimney pitches that I would link in one 230' pitch with our 70m rope. Good thing chimneys are easy to climb in the dark!</i></b>";
+ 
   //Prepare Markers  
-  var marker = _marker([8000, 4000]).addTo(map);
-  marker.bindPopup(pop1);
+    // Settings for IconBelay in its original size
+    // iconSize: [60, 73],
+    // iconAnchor: [19, 51],
+ 
+ 
+// Need to figure out how to make belay icon object
+// Simplifies code for many icons, especially changes
+// Should write code to resize icons depending on zoom level, which would be done much more easily by changing classes!
+
+  var _iconSizeX = 30;
+  var _iconSizeY = 36;
+  var _iconSize = [_iconSizeX, _iconSizeY];
+
+  myIconBelay1 = L.icon({
+    iconUrl: '../public/images/marker-icon-belay1.png',
+    iconSize: _iconSize,
+    iconAnchor: [9, 25],
+    className: 'myIconbelay1'
+  });
+  
+  //--------Belay Icons----------
+  
+  // Creating belay icons from belay icon object. Not working but kept for now.
+  // var myIconBelay1 = new BelayIcon({iconUrl: '../public/images/marker-icon-belay1.png'});
+      //myIconBelay2 = new BelayIcon({iconUrl: '../public/images/marker-icon-belay2.png'});
+  
+  
+  // var marker = _marker([8000, 4000]).addTo(map).bindPopup(pop1);  
+  
+  
+  
+  // Belay should be able to be combined into a loop function to define it, 
+  // ideally automatically scaled to whatever size of a coordinate storage array the user writes, with a pair of coordinates for each icon
+  // with a check such that if there is no corresponding myIconBelay & pop #, that a default or highest # one is used
+
+  // for (var i=0; i<Belay.length, i++){
+    // var iconBelay = "myIconBelay" + i
+    // var Belay = "belay" + i
+    
+    // var Belay1 = _marker([4162, 6600], {icon:iconBelay}).addTo(map).bindPopup(pop1)
+  // }
+   
+  // var belay1 = _marker([4162, 6600], {icon:myIconBelay1}).addTo(map).bindPopup(pop1),
+      // belay2 = _marker([2000, 2000], {icon:myIconBelay2}).addTo(map).bindPopup(pop2),
+      // belay3 = _marker([2000, 2000], {icon:myIconBelay3}).addTo(map).bindPopup(pop3),
+      // belay4 = _marker([2000, 2000], {icon:myIconBelay4}).addTo(map).bindPopup(pop4),
+      // belay5 = _marker([2000, 2000], {icon:myIconBelay5}).addTo(map).bindPopup(pop5),
+      // belay6 = _marker([2000, 2000], {icon:myIconBelay6}).addTo(map).bindPopup(pop6),
+      // belay7 = _marker([2000, 2000], {icon:myIconBelay7}).addTo(map).bindPopup(pop7),
+      // belay8 = _marker([2000, 2000], {icon:myIconBelay8}).addTo(map).bindPopup(pop8),
+      // belay9 = _marker([2000, 2000], {icon:myIconBelay9}).addTo(map).bindPopup(pop9),
+      // belay10 = _marker([2000, 2000], {icon:myIconBelay10}).addTo(map).bindPopup(pop10),
+      // belay11 = _marker([2000, 2000], {icon:myIconBelay11}).addTo(map).bindPopup(pop11),
+      // belay12 = _marker([2000, 2000], {icon:myIconBelay12}).addTo(map).bindPopup(pop12),
+      // belay13 = _marker([2000, 2000], {icon:myIconBelay13}).addTo(map).bindPopup(pop13),
+      // belay14 = _marker([2000, 2000], {icon:myIconBelay14}).addTo(map).bindPopup(pop14),
+      // belay15 = _marker([2000, 2000], {icon:myIconBelay15}).addTo(map).bindPopup(pop15),
+      // belay16 = _marker([2000, 2000], {icon:myIconBelay16}).addTo(map).bindPopup(pop16),
+      // belay17 = _marker([2000, 2000], {icon:myIconBelay17}).addTo(map).bindPopup(pop17),
+      // belay18 = _marker([2000, 2000], {icon:myIconBelay18}).addTo(map).bindPopup(pop18),
+      // belay19 = _marker([2000, 2000], {icon:myIconBelay19}).addTo(map).bindPopup(pop19),
+      // belay20 = _marker([2000, 2000], {icon:myIconBelay20}).addTo(map).bindPopup(pop20),
+      // belay21 = _marker([2000, 2000], {icon:myIconBelay21}).addTo(map).bindPopup(pop21),
+      // belay22 = _marker([2000, 2000], {icon:myIconBelay22}).addTo(map).bindPopup(pop22),
+      // belay23 = _marker([2000, 2000], {icon:myIconBelay23}).addTo(map).bindPopup(pop23),
+      // belay24 = _marker([2000, 2000], {icon:myIconBelay24}).addTo(map).bindPopup(pop24),
+      // belay25 = _marker([2000, 2000], {icon:myIconBelay25}).addTo(map).bindPopup(pop25);
+ 
+  var belay1 = _marker([4162, 6600], {icon:myIconBelay1, title:'P1'}).bindPopup(pop1),
+      belay2 = _marker([4080, 6240], {icon:myIconBelay1}).bindPopup(pop1),
+      belay3 = _marker([4040, 5950], {icon:myIconBelay1}).bindPopup(pop1),
+      belay4 = _marker([3986, 5460], {icon:myIconBelay1}).bindPopup(pop1),
+      belay5 = _marker([4026, 5232], {icon:myIconBelay1}).bindPopup(pop1),
+      belay6 = _marker([3892, 4844], {icon:myIconBelay1}).bindPopup(pop1),
+      belay7 = _marker([3890, 4380], {icon:myIconBelay1}).bindPopup(pop1),
+      belay8 = _marker([4026, 4048], {icon:myIconBelay1}).bindPopup(pop1),
+      belay9 = _marker([4182, 3872], {icon:myIconBelay1}).bindPopup(pop1),
+      belay10 = _marker([4284, 3736], {icon:myIconBelay1}).bindPopup(pop1),
+      belay11 = _marker([4426, 3580], {icon:myIconBelay1}).bindPopup(pop1),
+      belay12 = _marker([4630, 3144], {icon:myIconBelay1}).bindPopup(pop1),
+      belay13 = _marker([4652, 2838], {icon:myIconBelay1}).bindPopup(pop1),
+      belay14 = _marker([4664, 2646], {icon:myIconBelay1}).bindPopup(pop1),
+      belay15 = _marker([4746, 2370], {icon:myIconBelay1}).bindPopup(pop1),
+      belay16 = _marker([4918, 1990], {icon:myIconBelay1}).bindPopup(pop1),
+      belay17 = _marker([5212, 1828], {icon:myIconBelay1}).bindPopup(pop1),  //Big Sandy
+      belay18 = _marker([5226, 1530], {icon:myIconBelay1}).bindPopup(pop1),
+      belay19 = _marker([5270, 1250], {icon:myIconBelay1}).bindPopup(pop1),
+      belay20 = _marker([5308, 1016], {icon:myIconBelay1}).bindPopup(pop1),
+      belay21 = _marker([5104, 884], {icon:myIconBelay1}).bindPopup(pop1),
+      belay22 = _marker([4966, 760], {icon:myIconBelay1}).bindPopup(pop1),
+      belay23 = _marker([4840, 574], {icon:myIconBelay1}).bindPopup(pop1);
+ 
+ 
+ 
+ 
+ // Only add '.addTo(map)' to the control instantiation and not the symbol definition if it is desired 
+ // to leave the symbol invisible upon load
  
  //Prepare Circles
-  // var circle = _circle([4000, 1000], 200, {
+  // _circlePhoto = _circle([4000, 1000], 10, {
    // color: 'red',
+   // weight: 2,
    // fillColor: '#f03',
    // fillOpacity: 0.5
-  // }).addTo(map);
+  // });
+  
+  var circle = _circle([4000, 1000], 10, {
+   color: 'red',
+   weight: 2,
+   fillColor: '#f03',
+   fillOpacity: 0.5
+  }).addTo(map).bindPopup(pop1);
 
   //Prepare Polygons
-  // var polygon = _polygon([
-  // [5001.509, 1000],
-  // [5001.503, 2000],
-  // [6000, 2500]
-  // ]).addTo(map);
+  
+  //Thank God Ledge
+  
+  //The Zig Zags
+  
+  
+  //The Visor
+ 
+  var Visor1 = _polygon([
+  [4995.59913482336, 441.506941522929],
+  [4975.58471521269, 627.846024400506],
+  [5047.6366258111, 651.889777029871],
+  [5063.64816149964, 691.962698078812],
+  [5179.73179524153, 679.940821764129],
+  [5217.7591925018, 764.093955966906],
+  [5331.84138428262, 758.083017809566],
+  [5423.90771449171, 752.072079652224],
+  [5483.95097332372, 784.130416491376],
+  [5626.05335255948, 774.112186229141],
+  [5700.10670511896, 730.031973075306],
+  [5806.18312905552, 732.035619127753],
+  [5850.21485219899, 746.061141494882],
+  [5880.236481615, 812.181461225636],
+  [5946.28406633021, 828.210629645213],
+  [6014.33309300649, 828.210629645213],
+  [6072.37490987743, 864.276258589259],
+  [6156.43547224225, 874.294488851494],
+  [6274.52054794521, 902.345533585753],
+  [6404.61427541456, 892.327303323518],
+  [6560.72674837779, 858.265320431919],
+  [6708.83345349676, 816.188753330529],
+  [6772.8795962509, 782.126770438929],
+  [6840.92862292718, 738.046557285094],
+  [6848.93439077145, 705.988220445941],
+  [6718.84066330209, 695.969990183706],
+  [6640.78442682048, 722.017388865518],
+  [6432.6344628695, 728.028327022859],
+  [6310.54650324441, 722.017388865518],
+  [6080.3806777217, 663.911653344552],
+  [5934.27541456381, 655.897069134764],
+  [5774.16005767844, 605.805917823587],
+  [5620.04902667628, 573.747580984435],
+  [5533.9870223504, 565.732996774646],
+  [5415.90194664744, 533.674659935494],
+  [5241.77649603461, 517.645491515918],
+  [5139.70295602019, 475.568924414529],
+  [5089.66690699351, 447.517879680271],
+  [5081.66113914924, 445.514233627822],
+  [5073.65537130498, 443.510587575376],
+  [4995.59913482336, 441.506941522929]
+  ], {
+  color: 'black',
+  weight: 2,
+  opacity: 0.5,
+  fillColor: '#ffff66',
+  fillOpacity: 0.25,
+  }).addTo(map);
 
+  var Visor2 = _polygon([
+  [5812.18745493872, 673.929883606788],
+  [5852.21629416006, 726.024680970411],
+  [5880.236481615, 812.181461225636],
+  [5946.28406633021, 828.210629645213],
+  [6014.33309300649, 828.210629645213],
+  [6072.37490987743, 864.276258589259],
+  [6156.43547224225, 874.294488851494],
+  [6274.52054794521, 902.345533585753],
+  [6404.61427541456, 892.327303323518],
+  [6560.72674837779, 858.265320431919],
+  [6708.83345349676, 816.188753330529],
+  [6772.8795962509, 782.126770438929],
+  [6840.92862292718, 738.046557285094],
+  [6848.93439077145, 705.988220445941],
+  [6718.84066330209, 695.969990183706],
+  [6640.78442682048, 722.017388865518],
+  [6432.6344628695, 728.028327022859],
+  [6310.54650324441, 722.017388865518],
+  [6080.3806777217, 663.911653344552],
+  [5934.27541456381, 655.897069134764],
+  [5774.16005767844, 605.805917823587],
+  [5812.18745493872, 673.929883606788]
+  ], {
+  color: 'black',
+  weight: 2,
+  opacity: 0.5,
+  fillColor: 'ffff66',
+  fillOpacity: 0.25,
+  }).addTo(map);
+  
+  //Big Sandy
+  
+  
+  // The Chimneys
+  
+  
+  //Prepare Labels
+  //use DivIcons for labels http://leafletjs.com/reference.html#divicon
+      var myDivTxt = 'Mooo! I say! Moo!'
+
+      var myDivIcon = L.divIcon({
+          className: 'my-div-icon', 
+          //iconSize: new L.Point(700, 400),
+          //iconSize: [20, 20],
+          iconSize: null, //'null' allows div to be resized in CSS. Otherwise, CSS sizing is overwritten by JS.
+          // iconAnchor: [9, 25], //offset from top left corner
+          html:myDivTxt});
+
+      // L.marker(unproject([7000, 4500]), {icon:myDivIcon}).addTo(map);
+      var myDivIconMoo = _marker([7000, 4500], {icon:myDivIcon}).addTo(map);
+  
   //Prepare Polylines
   //Note: For now, the best method for generating large arrays for complex polylines is follows:
       // 1. Draw a vector path in Adobe Photoshop over the original, full size image.
@@ -60,7 +302,7 @@ var prepareLayers = function () {
       // 8. Convert the points to pixels in Excel, and append "[", ",", & "]," characters with the two columns with converted values into a new column.
       // 9. Copy the column and paste it as an array within a polyline variable defined below.
   
-  var polyline = _polyline([
+  var routeNWRR = _polyline([
   [4164, 7144],
   [4159.99711607787, 7094.91067171505],
   [4153.99279019466, 7056.84139671855],
@@ -325,8 +567,86 @@ var prepareLayers = function () {
   [4981.58904109589, 475.865937456177],
   [4997.60057678443, 464.845884167718],
   [5008.6085075703, 453.82583087926]
-  ]).addTo(map);
+  ]);
   
   //Prepare Layer Groups
+    var route = L.layerGroup([
+      routeNWRR
+    ]).addTo(map);
+
+    var belays = L.layerGroup([
+      belay1,
+      belay2,
+      belay3,
+      belay4,
+      belay5,
+      belay6,
+      belay7,
+      belay8,
+      belay9,
+      belay10,
+      belay11,
+      belay12,
+      belay13,
+      belay14,
+      belay15,
+      belay16,
+      belay17,
+      belay18,
+      belay19,
+      belay20,
+      belay21,
+      belay22,
+      belay23
+    ]).addTo(map);
   
+    var photos = L.layerGroup([
+      circle
+    ]).addTo(map);
+  
+    var labels = L.layerGroup([
+      myDivIconMoo
+    ]).addTo(map);
+
+    var features = L.layerGroup([
+      Visor1,
+      Visor2
+    ]).addTo(map);
+ 
+  //Prepare Layer Controls
+  var baseMaps = {
+  "Half Dome NW Face": map
+  };
+  
+  var overlayMaps = {
+  "Belays": belays,
+  "Northwest Regular Route": routeNWRR,
+  "Photos": photos,
+  "Labels": labels,
+  "Features": features
+  };
+  
+  L.control.layers(baseMaps,overlayMaps).addTo(map);
+  L.control.fullscreen({ position: 'topleft', title: 'Show me the fullscreen !' }).addTo(map); 
+
+//Donny, it would be interesting to see if we could alter this to give scale in pixels, 
+// or allow us to define a custom units scale in the picture
+ L.control.scale().addTo(map);   
+ 
+
+//Resizing layers based on zoom level
+
+//So far I can return the correct zoom level, and change the _iconSize variables based on the level, 
+// but the icons don't seem to be updating
+ // var zoomLevel = map.getZoom();
+  ////alert(zoomLevel);
+  // map.on('zoomend', function(e){
+      // var zoomLevel = map.getZoom();
+      // var _iconSizeX = 30*(1+(18-zoomLevel)), _iconSizeY = 36;
+      ////alert(_iconSizeX);
+      ////alert(_iconSizeY);
+      // var _iconSize = [_iconSizeX, _iconSizeY];
+      ////alert(zoomLevel);
+      // return belays.addTo(map);
+      // });
 };

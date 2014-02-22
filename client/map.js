@@ -24,7 +24,7 @@ var initialize = function () {
   L.tileLayer('../public/map_tiles/{z}/map_tile_{x}_{y}.jpg', {
   attribution: 'Map data &copy; Mark Porter Thomas'
   }).addTo(map);
-
+  
   myIcon = L.icon({
     iconUrl: '../public/images/marker-icon.png',
     iconRetinaUrl: '../public/images/marker-icon@2x.png',
@@ -35,9 +35,11 @@ var initialize = function () {
     //shadowSize: [68, 95],
     //shadowAnchor: [22, 94]
   });
-};
-
+  
+  };
+  
 window.onload = function () {
   initialize();
   prepareLayers();
 }
+
