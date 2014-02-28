@@ -4,13 +4,61 @@
 }
 
 .my-div-icon {
- background: red;
+/* background: red; */
 /* border: 1px solid #666; */
   color: white;
   text-align:center;
-  font-family:"Arial, Sans-serif";  font-size:20px;
+  font-family:"Arial Black", Gadget, sans-serif;  
+  font-size:20px;
   line-height:20px;
-  font-weight: 900;
+  font-weight: 900; /*900*/ 
   text-shadow: 3px 3px 5px black;
-
+  display: none;
 }
+
+.my-div-icon-photo {
+/* background: red; */
+  height: 35px;
+  width: 50px;
+  overflow: hidden;
+  border: 1px solid #ffffff;
+  box-shadow: 3px 4px 10px #000000;
+ /* display: none; */
+}
+
+.my-div-icon-photo-hover {
+/* background: red; */
+  height: 35px;
+  width: 50px;
+  overflow: hidden;
+  border: 1px solid #ffffff;
+  box-shadow: 3px 4px 10px #000000;
+ /* display: none; */
+}
+
+.my-div-icon-photo-click {
+/* background: red;  */
+  height: 35px;
+  width: 50px;
+  overflow: hidden;
+  border: 1px solid #d3d3d3;
+  box-shadow: 3px 4px 10px #000000;
+  opacity:0.4;
+  filter:alpha(opacity=40); /* For IE8 and earlier */
+ /* display: none; */
+}
+
+/* This is for possibly having div icons with numbers for the belays */
+.my-div-icon-belay{
+ /* background: red; */
+/* border: 1px solid #666; */
+  color: #00ff00;
+  text-align:center;
+  font-family: "Arial Black", Gadget, sans-serif;  
+  font-size:30px;
+  line-height:30px;
+  font-weight: 900;     /*scale is 100 to 900, 400=normal, 700=bold*/
+  text-shadow: 3px 3px 5px black;
+/* display: none; */
+  -webkit-text-stroke: 2px black;
+  }

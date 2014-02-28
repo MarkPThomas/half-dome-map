@@ -1,3 +1,11 @@
+//General TO DOs:
+//  1. Get plugin working for extracting coordinate data from screen clicks & manipulating lines & polygons
+
+
+
+//Function TO DOs:
+//  1.  Create some more functions for generalizing further the creation of various icons? 
+
 var unproject = function (coords) {
   return map.unproject(coords, map.getMaxZoom());
 };
@@ -6,12 +14,6 @@ _marker = function (coords, options) {
   options = _.extend({icon: myIcon}, options);
   return L.marker(unproject(coords), options);
 };
-
-
-// _markerDiv = function (coords, options) {
- // options = _.extend({icon: myIcon}, options);
-  // return L.marker(unproject(coords), options);
-// };
 
 _circle = function (center, radius, options) {
   options = _.extend({}, options);
@@ -31,155 +33,517 @@ _polyline = function (coordsList, options) {
     return unproject(coords); 
   }), options);
 };
-
-// var setup = function (){
- // var zoomLevel = map.getZoom();
- // var _iconSizeX = 30*(1+(18-zoomLevel)), _iconSizeY = 36;
- // var _iconSize = [_iconSizeX, _iconSizeY];
-
-   // map.on('zoomend', function(e){
-      // var zoomLevel = map.getZoom();
-      // var _iconSizeX = 30*(1+(18-zoomLevel)), _iconSizeY = 36;
-      // var _iconSize = [_iconSizeX, _iconSizeY];
-      // prepareLayers();
-      // });
- // };
+ 
+ // _plotter = function (coordsList, options) {
+  // options = _.extend({}, options);
+  // return L.Polyline.Plotter(_.map(coordsList, function (coords) {
+    // return unproject(coords); 
+  // }), options);
+// };
+ 
+ 
+//Function scales icons and their centering point. Applies to images & divs
+var scaleIcon = function(scale, myiconSize, iconAnchorSize){
+            j = Math.round(myiconSize[0]*scale);
+            k = Math.round(myiconSize[1]*scale);
+            l = Math.round(iconAnchorSize[0]*scale);
+            m = Math.round(iconAnchorSize[1]*scale);
+  return  [ scaledIconSize = [j, k],
+            scaledAnchorSize = [l, m]
+            ];
+};
+   
  
 var prepareLayers = function () {
- // var zoomLevel = map.getZoom();
- // var _iconSizeX = 30*(1+(18-zoomLevel)), _iconSizeY = 36;
+  //--------Other Icons----------
+  //TO DO:
+  //  1. Create arrow icons for labels to indicate tension & pendulum traverses? Keeping sizing could be tricky
+  //  2. Create animated marker to travel up route?
+  
+  //--------Belay Icons----------
+  //Belay coordinates in image
+  var belayCoords = new Array();
+      belayCoords[0] = [4162, 6600];
+      belayCoords[1] = [4080, 6230];
+      belayCoords[2] = [4050, 5940];
+      belayCoords[3] = [3986, 5460];
+      belayCoords[4] = [4026, 5232];
+      belayCoords[5] = [3892, 4844];
+      belayCoords[6] = [3890, 4380];
+      belayCoords[7] = [4026, 4048];
+      belayCoords[8] = [4182, 3872];
+      belayCoords[9] = [4284, 3736];
+      belayCoords[10] = [4426, 3580];
+      belayCoords[11] = [4630, 3144];
+      belayCoords[12] = [4652, 2838];
+      belayCoords[13] = [4664, 2646];
+      belayCoords[14] = [4746, 2370];
+      belayCoords[15] = [4918, 1990];
+      belayCoords[16] = [5212, 1828];  //Big Sandy
+      belayCoords[17] = [5226, 1530];
+      belayCoords[18] = [5270, 1250];
+      belayCoords[19] = [5308, 1016];
+      belayCoords[20] = [5104, 884];
+      belayCoords[21] = [4966, 760];
+      belayCoords[22] = [4840, 574];                   
+    
+    //Belay Icon formation types for different zoom levels
+    var myiconSize = [100, 70];     //Original icon size
+    var iconAnchorSize = [20, 50];    //Original icon anchor location within icon
+    
+    var myIconBelay = new Array();  //For zoom < 17
+      var data = scaleIcon(0.25, myiconSize, iconAnchorSize);
+      for (i=0; i <= belayCoords.length-1; i++){
+      myIconBelay[i] = L.icon({
+        iconUrl: '../public/images/marker-icon-belay' + (i + 1) + '.png',
+        iconSize: [scaledIconSize[0],scaledIconSize[1]],
+        iconAnchor: [scaledAnchorSize[0],scaledAnchorSize[1]],
+        className: 'myIconBelay' + (i + 1)
+      });
+      }
+
+    var myIconBelayLarge = new Array();   //For zoom >= 17
+      var data = scaleIcon(0.5, myiconSize, iconAnchorSize);
+      for (i=0; i <= belayCoords.length-1; i++){
+      myIconBelayLarge[i] = L.icon({
+        iconUrl: '../public/images/marker-icon-belay' + (i + 1) + '.png',
+        iconSize: [scaledIconSize[0],scaledIconSize[1]],
+        iconAnchor: [scaledAnchorSize[0],scaledAnchorSize[1]],
+        className: 'myIconBelay' + (i + 1)
+      });
+      }
+
+    //Constructing all belay markers w/ position
+    var belays = new Array();
+    for (i=0; i <= belayCoords.length-1; i++){
+      belays[i] = _marker(belayCoords[i], {icon:myIconBelay[i], clickable:false, title:'Belay ' + (i + 1)});
+    }
+    
+    //Adds all belay markers to one layer
+    var belaysLayer = L.layerGroup(belays).addTo(map);
+  
+    //Scales all markers depending on level of zoom
+    map.on('zoomend', function(e){
+      var zoomLevel = map.getZoom();
+      if (zoomLevel < 17){ 
+        for (i=0; i <= belayCoords.length-1; i++){
+        belays[i].setIcon(myIconBelay[i]);
+        }
+      }
+      if (zoomLevel >= 17){
+        for (i=0; i <= belayCoords.length-1; i++){
+        belays[i].setIcon(myIconBelayLarge[i]);
+        }
+      }
+    });  
+  
+  //--------Labels Icons----------
+  //TO DO: 
+  //  1. Finish constructing array with the following components
+  //    1a. Coordinate
+  //    1b. Anchor adjustment where necessary. Maybe make variable and then replace on an as-needed basis?
+  //    1c. Label text
+  
+    //Defining label coordinates, anchor offset, and text
+    var myLabels = new Array();
+        myLabels[0] = new Array([7000, 4500], [9,25], 'Mooo! I say! Moo!');
+        myLabels[1] = new Array([5000, 3600], [9,25], 'Here I am again!');
+    
+    //Label Icon formation types for different labels
+    var myDivIcon = new Array(); 
+    for (i=0; i <= myLabels.length-1; i++){
+        myDivIcon[i] = L.divIcon({
+          className: 'my-div-icon', 
+          iconSize: null, //'null' allows div to be resized in CSS. Otherwise, CSS sizing is overwritten by JS.
+          iconAnchor: myLabels[i][1], //offset from top left corner
+          html: myLabels[i][2]});
+    }
+   
+    //Constructing all label markers w/ position
+    var labels = new Array();
+    for (i=0; i <= myLabels.length-1; i++){
+      labels[i] = _marker(myLabels[i][0], {icon:myDivIcon[i], clickable:false});
+    }
+    
+    //Adds all label icons to one layer 
+    var labelsLayer = L.layerGroup(labels).addTo(map);
+    
+    //Size changes with zoom
+    map.on('zoomend', function(e){
+      var zoomLevel = map.getZoom();
+      switch(zoomLevel){
+      case 18:
+        $(".my-div-icon").css({
+          "font-size":"20px",
+          "line-height":"20px"
+        });
+        break;
+      case 17:      
+        $(".my-div-icon").css({
+          "font-size":"10px",
+          "line-height":"10px"
+        });
+        break;
+      case 16:
+        $(".my-div-icon").css({
+          "display":"inline",
+          "font-size":"10px",
+          "line-height":"10px"
+        });
+        break;
+      default:
+        $(".my-div-icon").css({
+          "display":"none"
+        });
+      break;
+      }
+      });
+      
+      //This is needed to make the label reappear upon layer unhide
+      map.on('overlayadd', function(e){
+        var zoomLevel = map.getZoom();
+        switch(zoomLevel){
+        case 18:
+          $(".my-div-icon").css({
+            "display":"inline",
+            "font-size":"20px",
+            "line-height":"20px",
+          });
+          break;
+        case 17:      
+          $(".my-div-icon").css({
+            "display":"inline",
+            "font-size":"10px",
+            "line-height":"10px",
+          });
+          break;
+        case 16:
+          $(".my-div-icon").css({
+            "display":"inline",
+            "font-size":"10px",
+            "line-height":"10px",
+          });
+          break;
+        }
+      });
+  
+  //--------Photo Icons----------
+  // TO DO:
+  //    1. Resolve whether to use small photo thumbnails w popup vs. smaller generic icon w/ popup
+  //      1a. Ideal is to have a smaller generic icon that turns into a photo thumbnail upon mouseover, with icon title as caption
+  //      1b. Another option is to use the smaller generic icon on faraway view, that changes thumbnail on the closest zooms
+  //    2. Resolve whether to have popup clickable photo open in new tab, or how to enlarge image
+  //    3. Spiderfier icons overlap too much. Any way to increase the spread?
+  //    4. Any way to track which photo has been clicked, and change the photo CSS to indicate this?
+  //    5. Should I switch icons when doing Spiderfy & unSpiderfy?
+  //    6. Create arrays for list of photos including Corresponding photo location in image
+  //    7. Fine tune CSS changes upon zoom. See labels code
+  
+  //---Initialize Spiderfier
+  var Spiderfier = new OverlappingMarkerSpiderfier(map, {nearbyDistance: 50});
+  
+  //Prepare PopUps
+    // Open in new tab
+  //pop1 is temp until ready to hook up array
+  var pop1 = "<h2>Pitch n</h2><a href=\"https://picasaweb.google.com/lh/photo/w2fL5fz4UoRzfWOUqeK9ldMTjNZETYmyPJy0liipFm0?feat=directlink\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-OPNp3bc7_G0/UibOVAjw6aI/AAAAAAACohs/bTELWpH-wLs/s300/2013-08-11%2520-%2520158a%2520-%2520Half%2520Dome%2520NWRR%2520-%2520IMG_2586.jpg\" /></a><br><b><i>P13, P14, and P15 (5.7, 5.7-5.9, 5.9) chimney pitches that I would link in one 230' pitch with our 70m rope. Good thing chimneys are easy to climb in the dark!</i></b>";
  
- // var _iconSize = [_iconSizeX, _iconSizeY];
-  // alert(zoomLevel);
-  // map.on('zoomend', function(e){
-      // var zoomLevel = map.getZoom();
-      // var _iconSizeX = 30*(1+(18-zoomLevel)), _iconSizeY = 36;
-      // alert(_iconSizeX);
-      // alert(_iconSizeY);
-      // var _iconSize = [_iconSizeX, _iconSizeY];
-      // alert(zoomLevel);
-      // return belays.addTo(map);
+  var sizeLarge = 2000
+  var size = 300
+  var pop = new Array();
+      pop[0] = "<a href=\"https://lh3.googleusercontent.com/-TogP3rHtDYs/UibIVUOXMkI/AAAAAAACoAA/HJG6P_UKXc0/s" + sizeLarge + "/2013-08-10%252520-%252520056%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2507.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-TogP3rHtDYs/UibIVUOXMkI/AAAAAAACoAA/HJG6P_UKXc0/s" + size + "/2013-08-10%252520-%252520056%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2507.jpg\" /></a><br><b><i>Cool OW right start to the Direct North Face of Half Dome. </i></b>";
+      pop[1] = "<a href=\"https://lh5.googleusercontent.com/-SWbphwG2jus/UibIbgacdnI/AAAAAAACoAk/zEgZreGIMQ0/s" + sizeLarge + "/2013-08-10%252520-%252520057%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2508.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-SWbphwG2jus/UibIbgacdnI/AAAAAAACoAk/zEgZreGIMQ0/s" + size + "/2013-08-10%252520-%252520057%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2508.jpg\" /></a><br><b><i>Cool OW left start to the Direct North Face of Half Dome. </i></b>";
+      pop[2] = "<a href=\"https://lh3.googleusercontent.com/-CMtw6p2In3E/UibI72UlPnI/AAAAAAACoEM/DLHSua-AKSo/s" + sizeLarge + "/2013-08-10%252520-%252520066%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2518.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-CMtw6p2In3E/UibI72UlPnI/AAAAAAACoEM/DLHSua-AKSo/s" + size + "/2013-08-10%252520-%252520066%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2518.jpg\" /></a><br><b><i>Looking across the N Face at sunset. A cl. 4 route ascends that gully as a more interesting way to start Snake Dike. </i></b>";
+      pop[3] = "<a href=\"https://lh6.googleusercontent.com/-FA6L1Z3o-_U/UibJGtqtVZI/AAAAAAACoFc/S0QRKh9OfVw/s" + sizeLarge + "/2013-08-10%252520-%252520068%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2520.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-FA6L1Z3o-_U/UibJGtqtVZI/AAAAAAACoFc/S0QRKh9OfVw/s" + size + "/2013-08-10%252520-%252520068%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2520.jpg\" /></a><br><b><i>Approaching Final Exam (5.10d) </i></b>";
+      pop[4] = "<a href=\"https://lh6.googleusercontent.com/-ImJEpaPhrlE/UibJKFlfN7I/AAAAAAACoF0/FfgfR7Um8Io/s" + sizeLarge + "/2013-08-10%252520-%252520069%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2521.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-ImJEpaPhrlE/UibJKFlfN7I/AAAAAAACoF0/FfgfR7Um8Io/s" + size + "/2013-08-10%252520-%252520069%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2521.jpg\" /></a><br><b><i>The great chimney systems of the NWRR of Half Dome. </i></b>";
+      pop[5] = "<a href=\"https://lh5.googleusercontent.com/-cE0AYTiudqk/UibJUw6Pq_I/AAAAAAACoG4/AwnbQyOD6mU/s" + sizeLarge + "/2013-08-10%252520-%252520069c%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2521.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-cE0AYTiudqk/UibJUw6Pq_I/AAAAAAACoG4/AwnbQyOD6mU/s" + size + "/2013-08-10%252520-%252520069c%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2521.jpg\" /></a><br><b><i>The Visor, with climbers on the aid pitches beneath. </i></b>";
+      pop[6] = "<a href=\"https://lh5.googleusercontent.com/-ywW2gh8wn1E/UibJidVFUjI/AAAAAAACoIU/JInSGxnm-Ec/s" + sizeLarge + "/2013-08-10%252520-%252520071%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2530.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-ywW2gh8wn1E/UibJidVFUjI/AAAAAAACoIU/JInSGxnm-Ec/s" + size + "/2013-08-10%252520-%252520071%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2530.jpg\" /></a><br><b><i>The sweet crack and corner of Final Exam (5.10d) </i></b>";
+      pop[7] = "<a href=\"https://lh3.googleusercontent.com/-pGNptZSR9a8/UibJtMXUH0I/AAAAAAACoJU/rYY3kdB-RM0/s" + sizeLarge + "/2013-08-10%252520-%252520082%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000217.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-pGNptZSR9a8/UibJtMXUH0I/AAAAAAACoJU/rYY3kdB-RM0/s" + size + "/2013-08-10%252520-%252520082%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000217.jpg\" /></a><br><b><i>Ongoing innovation in climbing hardware, over-communication of route beta and the ever-growing wave of amateurs wanting to call themselves \"big wall climbers\" brings with it a long list of repercussions. In many ways, Half Dome and El Cap have become the Mt Everests of the rock climbing world. At times, I felt sad returning to Half Dome and seeing the human footprint, like visiting a powerful and majestic animal confined by chains in a petting zoo. There is no glory here. I've found many of the five-star/classic routes so sought after to be completely lacking of passion. Still, there are times when the sun hits just right and your eyes connects and you feel the mystery and adventure that once was. (by Nic Risser) </i></b>";
+      pop[8] = "<a href=\"https://lh5.googleusercontent.com/-lGmlkoUKcHU/UibJv5ufFDI/AAAAAAACoJs/ObN9p-BLiBk/s" + sizeLarge + "/2013-08-10%252520-%252520086%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2532.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-lGmlkoUKcHU/UibJv5ufFDI/AAAAAAACoJs/ObN9p-BLiBk/s" + size + "/2013-08-10%252520-%252520086%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2532.jpg\" /></a><br><b><i>Looking up from our bivy spot at the looming north face of Half Dome under alpenglow. </i></b>";
+      pop[9] = "<a href=\"https://lh5.googleusercontent.com/-tp5fuY8JWnk/UibJ5xhTysI/AAAAAAACoKs/H98olX4C0x8/s" + sizeLarge + "/2013-08-10%252520-%252520090%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2534.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-tp5fuY8JWnk/UibJ5xhTysI/AAAAAAACoKs/H98olX4C0x8/s" + size + "/2013-08-10%252520-%252520090%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2534.jpg\" /></a><br><b><i>Nic leading P1 under headlamp as it got dark. I followed in the dark on this fun 5.10c pitch, which we fixed for jugging the next morning. (5.10c or C1) </i></b>";
+      pop[10] = "<a href=\"https://lh5.googleusercontent.com/-DsLAvH6B-dg/UibKBWrhLII/AAAAAAACoLU/TPuc7YL5mRU/s" + sizeLarge + "/2013-08-10%252520-%252520092%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2539.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-DsLAvH6B-dg/UibKBWrhLII/AAAAAAACoLU/TPuc7YL5mRU/s" + size + "/2013-08-10%252520-%252520092%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2539.jpg\" /></a><br><b><i>Nic and the nighttime horror of canned tuna without a fork or spoon! </i></b>";
+      pop[11] = "<a href=\"https://lh6.googleusercontent.com/-LBPNpTMa59A/UibKHd4uw2I/AAAAAAACoME/oCasmrKG1dc/s" + sizeLarge + "/2013-08-11%252520-%252520094%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2542.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-LBPNpTMa59A/UibKHd4uw2I/AAAAAAACoME/oCasmrKG1dc/s" + size + "/2013-08-11%252520-%252520094%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2542.jpg\" /></a><br><b><i>Nic atop P1. Jenny Abegg, Steph Abegg's sister, is leading P2. </i></b>";
+      pop[12] = "<a href=\"https://lh4.googleusercontent.com/-TxXgfand_fw/UibKTc-ILgI/AAAAAAACoNE/8FH5HhILwpI/s" + sizeLarge + "/2013-08-11%252520-%252520096%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2544.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-TxXgfand_fw/UibKTc-ILgI/AAAAAAACoNE/8FH5HhILwpI/s" + size + "/2013-08-11%252520-%252520096%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2544.jpg\" /></a><br><b><i>Nic leading the 5.9 crux on P2. The crux is pulling the roof to get into the stem box. </i></b>";
+      pop[13] = "<a href=\"https://lh3.googleusercontent.com/-cUowpdym4EU/UibKYjOa3DI/AAAAAAACoNY/PET6uy-yKao/s" + sizeLarge + "/2013-08-11%252520-%252520097%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2545.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-cUowpdym4EU/UibKYjOa3DI/AAAAAAACoNY/PET6uy-yKao/s" + size + "/2013-08-11%252520-%252520097%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2545.jpg\" /></a><br><b><i>Nic leading the 5.9 crux on P2. The crux is pulling the roof to get into the stem box. </i></b>";
+      pop[14] = "<a href=\"https://lh3.googleusercontent.com/-Osdu9i3bKPs/UibKcpsq4vI/AAAAAAACoN0/hOfQI7IFJJU/s" + sizeLarge + "/2013-08-11%252520-%252520098%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000223.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-Osdu9i3bKPs/UibKcpsq4vI/AAAAAAACoN0/hOfQI7IFJJU/s" + size + "/2013-08-11%252520-%252520098%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000223.jpg\" /></a><br><b><i>We ran into Steph Abegg's sister, Jenni, on the climb! They were doing the route in a day. (by Nic Risser) </i></b>";
+      pop[15] = "<a href=\"https://lh6.googleusercontent.com/-hj13bErz6uo/UibKkn6pnvI/AAAAAAACoOQ/3cBBRRUkzlk/s" + sizeLarge + "/2013-08-11%252520-%252520100%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2547.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-hj13bErz6uo/UibKkn6pnvI/AAAAAAACoOQ/3cBBRRUkzlk/s" + size + "/2013-08-11%252520-%252520100%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2547.jpg\" /></a><br><b><i>Following Nic up P2-3, which we linked. (5.9 and 5.8) </i></b>";
+      pop[16] = "<a href=\"https://lh6.googleusercontent.com/-Hd3cBNAogps/UibKsTZCnjI/AAAAAAACoO4/nyOGPbSaN-Q/s" + sizeLarge + "/2013-08-11%252520-%252520101%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2549.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-Hd3cBNAogps/UibKsTZCnjI/AAAAAAACoO4/nyOGPbSaN-Q/s" + size + "/2013-08-11%252520-%252520101%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2549.jpg\" /></a><br><b><i>The 5.11 roof on P4 (5.9+ C1). Nic wanted to lead this rather than aid it. Technically he got it clean, but he fell out/pumped out when trying to place gear, which was very difficult in that awkward corner. </i></b>";
+      pop[17] = "<a href=\"https://lh3.googleusercontent.com/-dP33tN2jipI/UibK034lVNI/AAAAAAACoPU/BzSTVC3bCLY/s" + sizeLarge + "/2013-08-11%252520-%252520107%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2550.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-dP33tN2jipI/UibK034lVNI/AAAAAAACoPU/BzSTVC3bCLY/s" + size + "/2013-08-11%252520-%252520107%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2550.jpg\" /></a><br><b><i>Following P4-5 (5.9+ C1, and 5.9) </i></b>";
+      pop[18] = "<a href=\"https://lh5.googleusercontent.com/-7vR4cWTOeVQ/UibK86BvjfI/AAAAAAACoP0/q4Eg5HRjKFY/s" + sizeLarge + "/2013-08-11%252520-%252520108%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2551.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-7vR4cWTOeVQ/UibK86BvjfI/AAAAAAACoP0/q4Eg5HRjKFY/s" + size + "/2013-08-11%252520-%252520108%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2551.jpg\" /></a><br><b><i>Following P4-5, at the bolt ladder. (5.9+ C1, and 5.9) </i></b>";
+      pop[19] = "<a href=\"https://lh5.googleusercontent.com/-qn3RbKdsY9s/UibLEeeBSGI/AAAAAAACoQM/0Dan9d1En2s/s" + sizeLarge + "/2013-08-11%252520-%252520109%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2552.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-qn3RbKdsY9s/UibLEeeBSGI/AAAAAAACoQM/0Dan9d1En2s/s" + size + "/2013-08-11%252520-%252520109%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2552.jpg\" /></a><br><b><i>Looking at P6 (5.9). Kind of mungy and uninspiring. </i></b>";
+      pop[20] = "<a href=\"https://lh5.googleusercontent.com/-pI3aY4z9t_A/UibLRxgX7kI/AAAAAAACoRE/wu-PViL-NdE/s" + sizeLarge + "/2013-08-11%252520-%252520111%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2554.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-pI3aY4z9t_A/UibLRxgX7kI/AAAAAAACoRE/wu-PViL-NdE/s" + size + "/2013-08-11%252520-%252520111%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2554.jpg\" /></a><br><b><i>Looking up P7 (5.8). Even more mungy and uninspiring. Rock gets rotten and grassy as well. </i></b>";
+      pop[21] = "<a href=\"https://lh5.googleusercontent.com/-2oONoZ5W3A4/UibLdZexapI/AAAAAAACoRs/dy09XZ1ZiAs/s" + sizeLarge + "/2013-08-11%252520-%252520113%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2556.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-2oONoZ5W3A4/UibLdZexapI/AAAAAAACoRs/dy09XZ1ZiAs/s" + size + "/2013-08-11%252520-%252520113%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2556.jpg\" /></a><br><b><i>Following up P7 (5.8). </i></b>";
+      pop[22] = "<a href=\"https://lh4.googleusercontent.com/-oPQ9EFxVqyE/UibLk1FC_0I/AAAAAAACoSE/oai5G8hON94/s" + sizeLarge + "/2013-08-11%252520-%252520114%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2557.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-oPQ9EFxVqyE/UibLk1FC_0I/AAAAAAACoSE/oai5G8hON94/s" + size + "/2013-08-11%252520-%252520114%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2557.jpg\" /></a><br><b><i>Following up P7 (5.8). </i></b>";
+      pop[23] = "<a href=\"https://lh6.googleusercontent.com/-htgVBbXj0z4/UibLopN5A0I/AAAAAAACoSg/ZT2fJxGNe2k/s" + sizeLarge + "/2013-08-11%252520-%252520115%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2559.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-htgVBbXj0z4/UibLopN5A0I/AAAAAAACoSg/ZT2fJxGNe2k/s" + size + "/2013-08-11%252520-%252520115%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2559.jpg\" /></a><br><b><i>Looking over to the huge chimneys that we will climb later today, with the Visor above. </i></b>";
+      pop[24] = "<a href=\"https://lh4.googleusercontent.com/-w2pOgz6e6ck/UibL85RSiFI/AAAAAAACoUQ/gRPi-UttWLI/s" + sizeLarge + "/2013-08-11%252520-%252520119%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2563.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-w2pOgz6e6ck/UibL85RSiFI/AAAAAAACoUQ/gRPi-UttWLI/s" + size + "/2013-08-11%252520-%252520119%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2563.jpg\" /></a><br><b><i>Wall Nut ejoying the views as we gain elevation. </i></b>";
+      pop[25] = "<a href=\"https://lh6.googleusercontent.com/-ZtFdgS0xsyk/UibMHc52R2I/AAAAAAACoVM/xpXFa4HkgvM/s" + sizeLarge + "/2013-08-11%252520-%252520122%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000230.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-ZtFdgS0xsyk/UibMHc52R2I/AAAAAAACoVM/xpXFa4HkgvM/s" + size + "/2013-08-11%252520-%252520122%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000230.jpg\" /></a><br><b><i>Following the lower angle terrain of P8-9, which we easily linked (5.8, and  cl. 4). (by Nic Risser) </i></b>";
+      pop[26] = "<a href=\"https://lh5.googleusercontent.com/-pFF2TherGUc/UibMNRYJIXI/AAAAAAACoVw/ZyJEJpGzhf0/s" + sizeLarge + "/2013-08-11%252520-%252520123%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2565.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-pFF2TherGUc/UibMNRYJIXI/AAAAAAACoVw/ZyJEJpGzhf0/s" + size + "/2013-08-11%252520-%252520123%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2565.jpg\" /></a><br><b><i>Following up P8-9, which we easily linked. It is mostly 4th class, with one short easy 5.8 bit. (5.8, and  cl. 4) </i></b>";
+      pop[27] = "<a href=\"https://lh6.googleusercontent.com/-Txj3fFqCXEc/UibMZFrHevI/AAAAAAACoWo/XZvaW_hJKNQ/s" + sizeLarge + "/2013-08-11%252520-%252520126%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2566.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-Txj3fFqCXEc/UibMZFrHevI/AAAAAAACoWo/XZvaW_hJKNQ/s" + size + "/2013-08-11%252520-%252520126%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2566.jpg\" /></a><br><b><i>Looking up the P10 bolt ladder. The bolts were a bit far apart, but doable. (C1) </i></b>";
+      pop[28] = "<a href=\"https://lh5.googleusercontent.com/-r9PSGpaSVs8/UibMfChGjvI/AAAAAAACoXM/-j9SlJtuepc/s" + sizeLarge + "/2013-08-11%252520-%252520127%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2567.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-r9PSGpaSVs8/UibMfChGjvI/AAAAAAACoXM/-j9SlJtuepc/s" + size + "/2013-08-11%252520-%252520127%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2567.jpg\" /></a><br><b><i>Nic enjoying the increased exposure at the P10 belay. It is finally starting to feel like we are getting somewhere! </i></b>";
+      pop[29] = "<a href=\"https://lh3.googleusercontent.com/-OpKe1fEjSq8/UibMj4k5A_I/AAAAAAACoX0/J9MTMOsXMng/s" + sizeLarge + "/2013-08-11%252520-%252520128%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2568.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-OpKe1fEjSq8/UibMj4k5A_I/AAAAAAACoX0/J9MTMOsXMng/s" + size + "/2013-08-11%252520-%252520128%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2568.jpg\" /></a><br><b><i>Looking down P10 from near the top of the bolt ladder and beginning of the tension traverse. (C1) </i></b>";
+      pop[30] = "<a href=\"https://lh4.googleusercontent.com/-SdDjWV4GIzE/UibMoYxoVJI/AAAAAAACoYU/xS7_qlr-LPM/s" + sizeLarge + "/2013-08-11%252520-%252520129%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2569.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-SdDjWV4GIzE/UibMoYxoVJI/AAAAAAACoYU/xS7_qlr-LPM/s" + size + "/2013-08-11%252520-%252520129%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2569.jpg\" /></a><br><b><i>The view one sees from the tension traverse. It was quite tough to get over there statically and you'd face a big swing while face climbing on sloping holds, so unfortunately I backed off and let Nic get through this sections. </i></b>";
+      pop[31] = "<a href=\"https://lh6.googleusercontent.com/-jJ6qqc2EozM/UibMu1C0Y0I/AAAAAAACoYs/9Rb8h2oZkZI/s" + sizeLarge + "/2013-08-11%252520-%252520130%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000233.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-jJ6qqc2EozM/UibMu1C0Y0I/AAAAAAACoYs/9Rb8h2oZkZI/s" + size + "/2013-08-11%252520-%252520130%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000233.jpg\" /></a><br><b><i>Following the bolt ladder. I couldn't get the tension traverse to work, so gave the finish up to Nic to work out. (by Nic Risser) </i></b>";
+      pop[32] = "<a href=\"https://lh5.googleusercontent.com/-w80pu9F-smk/UibM1fQl9zI/AAAAAAACoZI/JROhHXt6H18/s" + sizeLarge + "/2013-08-11%252520-%252520135%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000238.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-w80pu9F-smk/UibM1fQl9zI/AAAAAAACoZI/JROhHXt6H18/s" + size + "/2013-08-11%252520-%252520135%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000238.jpg\" /></a><br><b><i>Mark gets ready to lower out as we near the Robbins Traverse. (by Nic Risser) </i></b>";
+      pop[33] = "<a href=\"https://lh3.googleusercontent.com/-ztwaULiB8Vk/UibNAwX5hkI/AAAAAAACoaM/rHW5tIldj5U/s" + sizeLarge + "/2013-08-11%252520-%252520139%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2570.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-ztwaULiB8Vk/UibNAwX5hkI/AAAAAAACoaM/rHW5tIldj5U/s" + size + "/2013-08-11%252520-%252520139%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2570.jpg\" /></a><br><b><i>Nic leading out on P11 toward the Robbins Traverse (5.9-5.10). This is very exposed! The crux is higher up and is in no way 5.8. I'd agree with the 5.10b opinion and would call it the free crux of the route for me. </i></b>";
+      pop[34] = "<a href=\"https://lh5.googleusercontent.com/-h_MSXUOf8KY/UibNReU148I/AAAAAAACobc/2zp6FYCdWvE/s" + sizeLarge + "/2013-08-11%252520-%252520142%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2571.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-h_MSXUOf8KY/UibNReU148I/AAAAAAACobc/2zp6FYCdWvE/s" + size + "/2013-08-11%252520-%252520142%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2571.jpg\" /></a><br><b><i>Reaching the tough crux of the Robbins Traverse (P11, 5.9-5.10). You go to the right and make a very thin and physical step left on very slick rock. This part felt like 5.10b face, and goes at C2. Fortunately there is a fixed nut on that little roof. </i></b>";
+      pop[35] = "<a href=\"https://lh5.googleusercontent.com/-0JkBwVcV4gE/UibNZBh6bII/AAAAAAACocA/Acy19Nuv_FY/s" + sizeLarge + "/2013-08-11%252520-%252520143%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000244.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-0JkBwVcV4gE/UibNZBh6bII/AAAAAAACocA/Acy19Nuv_FY/s" + size + "/2013-08-11%252520-%252520143%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000244.jpg\" /></a><br><b><i>Following the Robbins Traverse (P11, 5.9-5.10). (by Nic Risser) </i></b>";
+      pop[36] = "<a href=\"https://lh5.googleusercontent.com/-cx7qrFIUmdc/UibNgknAX-I/AAAAAAACocY/ll-wF-P0AvQ/s" + sizeLarge + "/2013-08-11%252520-%252520145%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2572.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-cx7qrFIUmdc/UibNgknAX-I/AAAAAAACocY/ll-wF-P0AvQ/s" + size + "/2013-08-11%252520-%252520145%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2572.jpg\" /></a><br><b><i>The final ledge traverse on P11. Good spot for some warm sun and a lunch break! The chimney pitches are beyond. </i></b>";
+      pop[37] = "<a href=\"https://lh4.googleusercontent.com/-ikZ6T-WKBO8/UibNkKsJqdI/AAAAAAACocw/mikXF9jxQG0/s" + sizeLarge + "/2013-08-11%252520-%252520146%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2573.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-ikZ6T-WKBO8/UibNkKsJqdI/AAAAAAACocw/mikXF9jxQG0/s" + size + "/2013-08-11%252520-%252520146%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2573.jpg\" /></a><br><b><i>Leading into the P12 5.6 chimney. This part is VERY easy. </i></b>";
+      pop[38] = "<a href=\"https://lh5.googleusercontent.com/-YjXwLvBTWeU/UibNujyIB3I/AAAAAAACods/vWU5iklBBoc/s" + sizeLarge + "/2013-08-11%252520-%252520149%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2578.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-YjXwLvBTWeU/UibNujyIB3I/AAAAAAACods/vWU5iklBBoc/s" + size + "/2013-08-11%252520-%252520149%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2578.jpg\" /></a><br><b><i>Nic enjoying the afternoon sun while I lead the P12 chimneys and aid corner. </i></b>";
+      pop[39] = "<a href=\"https://lh4.googleusercontent.com/-IBYX8Cj9pLY/UibNznUPaFI/AAAAAAACoeM/FeL5y3bEUeM/s" + sizeLarge + "/2013-08-11%252520-%252520151%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2577.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-IBYX8Cj9pLY/UibNznUPaFI/AAAAAAACoeM/FeL5y3bEUeM/s" + size + "/2013-08-11%252520-%252520151%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2577.jpg\" /></a><br><b><i>The easy 5.6 chimney on P12. </i></b>";
+      pop[40] = "<a href=\"https://lh3.googleusercontent.com/-iOx605fZmKw/UibN24HJJNI/AAAAAAACoew/8xEmMO8jH_M/s" + sizeLarge + "/2013-08-11%252520-%252520152%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2580.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-iOx605fZmKw/UibN24HJJNI/AAAAAAACoew/8xEmMO8jH_M/s" + size + "/2013-08-11%252520-%252520152%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2580.jpg\" /></a><br><b><i>The step over into the 5.11-C1 corner was not trivial! It was not too secure and a fall would land one hard on the chimney chockstones, so I explored the 5.9 squeeze to 5.10 crack tunnel through option first. </i></b>";
+      pop[41] = "<a href=\"https://lh3.googleusercontent.com/-4P0YinyfD9o/UibN8VI72PI/AAAAAAACofU/SiEEwitRe5U/s" + sizeLarge + "/2013-08-11%252520-%252520153%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2581.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-4P0YinyfD9o/UibN8VI72PI/AAAAAAACofU/SiEEwitRe5U/s" + size + "/2013-08-11%252520-%252520153%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2581.jpg\" /></a><br><b><i>Looking deep into the 5.9 squeeze. </i></b>";
+      pop[42] = "<a href=\"https://lh4.googleusercontent.com/-WUkZfyjvhdE/UibOBnK_tZI/AAAAAAACofk/GrlQXRBsDH8/s" + sizeLarge + "/2013-08-11%252520-%252520154%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2582.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-WUkZfyjvhdE/UibOBnK_tZI/AAAAAAACofk/GrlQXRBsDH8/s" + size + "/2013-08-11%252520-%252520154%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2582.jpg\" /></a><br><b><i>Looking up into the 5.9 squeeze. Unfortunately the tunnel-through would not work with the follower's pack, so I had to back off and figure out how to get safely into the aid corner. </i></b>";
+      pop[43] = "<a href=\"https://lh4.googleusercontent.com/-LUroh32_oRo/UibOEk0vGVI/AAAAAAACof8/ZUi8WeOIJvo/s" + sizeLarge + "/2013-08-11%252520-%252520156%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2584.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-LUroh32_oRo/UibOEk0vGVI/AAAAAAACof8/ZUi8WeOIJvo/s" + size + "/2013-08-11%252520-%252520156%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2584.jpg\" /></a><br><b><i>After placing gear high in an expanding flake, and doing some big stemming, I found it all right to get here. Now to free climb, then french free, then aid! Unfortunately I used up the sizes I needed earlier as ST called for larger cams on this section. Doh! </i></b>";
+      pop[44] = "<a href=\"https://lh6.googleusercontent.com/-U-9TncLV0wY/UibOMEZnSeI/AAAAAAACogw/TNBwe3MQA1E/s" + sizeLarge + "/2013-08-11%252520-%252520157%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2585.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-U-9TncLV0wY/UibOMEZnSeI/AAAAAAACogw/TNBwe3MQA1E/s" + size + "/2013-08-11%252520-%252520157%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2585.jpg\" /></a><br><b><i>Looking down P12 after the tension traversse and final bit of unprotected 5.7 wide. Looks like I took way too long. </i></b>";
+      pop[45] = "<a href=\"https://lh3.googleusercontent.com/-OPNp3bc7_G0/UibOVAjw6aI/AAAAAAACohs/bTELWpH-wLs/s" + sizeLarge + "/2013-08-11%252520-%252520158a%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2586.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-OPNp3bc7_G0/UibOVAjw6aI/AAAAAAACohs/bTELWpH-wLs/s" + size + "/2013-08-11%252520-%252520158a%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2586.jpg\" /></a><br><b><i>P13, P14, and P15 (5.7, 5.7-5.9, 5.9) chimney pitches that I would link in one 230' pitch with our 70m rope. Good thing chimneys are easy to climb in the dark! </i></b>";
+      pop[46] = "<a href=\"https://lh4.googleusercontent.com/-ICheV8dTfgc/UibOdDlp0bI/AAAAAAACojI/MERHMaYr-_8/s" + sizeLarge + "/2013-08-12%252520-%252520161%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2592.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-ICheV8dTfgc/UibOdDlp0bI/AAAAAAACojI/MERHMaYr-_8/s" + size + "/2013-08-12%252520-%252520161%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2592.jpg\" /></a><br><b><i>Rootbeer and smashed cupcakes! In this state we decided to forgo lighting candles . . . </i></b>";
+      pop[47] = "<a href=\"https://lh5.googleusercontent.com/-yTKpq_Nb370/UibOfsVoMOI/AAAAAAACojg/sViC2RZuJmc/s" + sizeLarge + "/2013-08-12%252520-%252520162%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2593.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-yTKpq_Nb370/UibOfsVoMOI/AAAAAAACojg/sViC2RZuJmc/s" + size + "/2013-08-12%252520-%252520162%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2593.jpg\" /></a><br><b><i>30th Birthday party atop Big Sandy Ledge! (by Nic Risser) </i></b>";
+      pop[48] = "<a href=\"https://lh4.googleusercontent.com/-1agkspaq16o/UibOyEkV37I/AAAAAAAColM/AKgdoHMtwNs/s" + sizeLarge + "/2013-08-12%252520-%252520166%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2598.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-1agkspaq16o/UibOyEkV37I/AAAAAAAColM/AKgdoHMtwNs/s" + size + "/2013-08-12%252520-%252520166%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2598.jpg\" /></a><br><b><i>Signs of life from the ledge below. </i></b>";
+      pop[49] = "<a href=\"https://lh5.googleusercontent.com/--SOkYhauGSs/UibO_sH0QZI/AAAAAAAComg/8iEJ_ihQ9FQ/s" + sizeLarge + "/2013-08-12%252520-%252520169%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000248.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/--SOkYhauGSs/UibO_sH0QZI/AAAAAAAComg/8iEJ_ihQ9FQ/s" + size + "/2013-08-12%252520-%252520169%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000248.jpg\" /></a><br><b><i>Climb on! </i></b>";
+      pop[50] = "<a href=\"https://lh4.googleusercontent.com/-g3kSWfaR1Xw/UibPHNFxINI/AAAAAAAConA/7blvg5u-h_k/s" + sizeLarge + "/2013-08-12%252520-%252520171%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2601.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-g3kSWfaR1Xw/UibPHNFxINI/AAAAAAAConA/7blvg5u-h_k/s" + size + "/2013-08-12%252520-%252520171%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2601.jpg\" /></a><br><b><i>Nic leading P18 (C1). I should have led this pitch, but the exposure of the wall was getting to me. </i></b>";
+      pop[51] = "<a href=\"https://lh5.googleusercontent.com/-rcea82NylvI/UibPSTVZzbI/AAAAAAACooA/EojfhApYhes/s" + sizeLarge + "/2013-08-12%252520-%252520173%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2604.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-rcea82NylvI/UibPSTVZzbI/AAAAAAACooA/EojfhApYhes/s" + size + "/2013-08-12%252520-%252520173%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2604.jpg\" /></a><br><b><i>Nic leading P18 (C1) nearly to the tension traverse tat. </i></b>";
+      pop[52] = "<a href=\"https://lh4.googleusercontent.com/-VdiJvfnEvqk/UibPcDJhm-I/AAAAAAACoo4/ldij4s9kagA/s" + sizeLarge + "/2013-08-12%252520-%252520176%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000250.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-VdiJvfnEvqk/UibPcDJhm-I/AAAAAAACoo4/ldij4s9kagA/s" + size + "/2013-08-12%252520-%252520176%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000250.jpg\" /></a><br><b><i>Looking down to Mark on Big Sandy Ledge. (by Nic Risser) </i></b>";
+      pop[53] = "<a href=\"https://lh4.googleusercontent.com/-Qj0Ipuywxzg/UibPhx9G6XI/AAAAAAACopY/JNjY3Pz89Wg/s" + sizeLarge + "/2013-08-12%252520-%252520178%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000252.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-Qj0Ipuywxzg/UibPhx9G6XI/AAAAAAACopY/JNjY3Pz89Wg/s" + size + "/2013-08-12%252520-%252520178%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000252.jpg\" /></a><br><b><i>Mark jugging P18, nostrils flared in determination to ignore the exposure. (by Nic Risser) </i></b>";
+      pop[54] = "<a href=\"https://lh5.googleusercontent.com/-ReLvM1j9ARs/UibPnJtK3II/AAAAAAACopw/IkKfu_f08Tc/s" + sizeLarge + "/2013-08-12%252520-%252520180%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2606.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-ReLvM1j9ARs/UibPnJtK3II/AAAAAAACopw/IkKfu_f08Tc/s" + size + "/2013-08-12%252520-%252520180%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2606.jpg\" /></a><br><b><i>Jugging P19 (5.10b or C1) and P20 (C1), which Nic linked, freeing P19. Rope drag made P20 slow enough that this was probably slower than breaking up pitches. </i></b>";
+      pop[55] = "<a href=\"https://lh6.googleusercontent.com/-H0-c6zITAQ4/UibPqQ4G_rI/AAAAAAACoqY/VmYSEIJP6A0/s" + sizeLarge + "/2013-08-12%252520-%252520181%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2607.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-H0-c6zITAQ4/UibPqQ4G_rI/AAAAAAACoqY/VmYSEIJP6A0/s" + size + "/2013-08-12%252520-%252520181%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2607.jpg\" /></a><br><b><i>Jugging up the final corner of P20 (C1). </i></b>";
+      pop[56] = "<a href=\"https://lh5.googleusercontent.com/-ZP0dtb5_YT0/UibPsocwY9I/AAAAAAACorQ/0RfWtRBzCc8/s" + sizeLarge + "/2013-08-12%252520-%252520182%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000254.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-ZP0dtb5_YT0/UibPsocwY9I/AAAAAAACorQ/0RfWtRBzCc8/s" + size + "/2013-08-12%252520-%252520182%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000254.jpg\" /></a><br><b><i>Mark jugging P20, nostrils flared in determination to ignore the exposure. (by Nic Risser) </i></b>";
+      pop[57] = "<a href=\"https://lh5.googleusercontent.com/-R_TEAhD_B4c/UibP1ip41DI/AAAAAAACosI/6ZYgbIESxFM/s" + sizeLarge + "/2013-08-12%252520-%252520188%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2609.jpg\" target=\"_blank\"><img src=\"https://lh5.googleusercontent.com/-R_TEAhD_B4c/UibP1ip41DI/AAAAAAACosI/6ZYgbIESxFM/s" + size + "/2013-08-12%252520-%252520188%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2609.jpg\" /></a><br><b><i>Thank God Ledge awaits (P21, 5.9). I should have also led this pitch, but exposure and serious food poisoning left me feeling less up to the task. Quite thrilling to follow! </i></b>";
+      pop[58] = "<a href=\"https://lh4.googleusercontent.com/-8Wx678uFNCo/UibP4-UG7SI/AAAAAAACoso/xOVvRnCKYzQ/s" + sizeLarge + "/2013-08-12%252520-%252520190%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2611.jpg\" target=\"_blank\"><img src=\"https://lh4.googleusercontent.com/-8Wx678uFNCo/UibP4-UG7SI/AAAAAAACoso/xOVvRnCKYzQ/s" + size + "/2013-08-12%252520-%252520190%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2611.jpg\" /></a><br><b><i>Nic at the start of the bolt ladder on P23 (C1+, two tension traverses requiring lower-outs to follow). He found the cam hook to be invaluable on this pitch. </i></b>";
+      pop[59] = "<a href=\"https://lh3.googleusercontent.com/-IGp7ousDnlU/UibP792F_oI/AAAAAAACotA/OnWLx2967GA/s" + sizeLarge + "/2013-08-12%252520-%252520191%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2613.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-IGp7ousDnlU/UibP792F_oI/AAAAAAACotA/OnWLx2967GA/s" + size + "/2013-08-12%252520-%252520191%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2613.jpg\" /></a><br><b><i>Following P23 (C1+), just before the second lower-out. </i></b>";
+      pop[60] = "<a href=\"https://lh6.googleusercontent.com/-MtS7C5GRVlg/UibQA0mAwdI/AAAAAAACotg/yOWKqfW48-U/s" + sizeLarge + "/2013-08-12%252520-%252520192%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2614.jpg\" target=\"_blank\"><img src=\"https://lh6.googleusercontent.com/-MtS7C5GRVlg/UibQA0mAwdI/AAAAAAACotg/yOWKqfW48-U/s" + size + "/2013-08-12%252520-%252520192%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2614.jpg\" /></a><br><b><i>Nic leading P24 (5.7), on easy terrain. The 5.7 slab crux is right off the belay for a couple of moves and not too bad. </i></b>";
+      pop[61] = "<a href=\"https://lh3.googleusercontent.com/-jzNEfzUo7Zg/UibQJqs2hYI/AAAAAAACouI/cxLKJhTRF3w/s" + sizeLarge + "/2013-08-12%252520-%252520194%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2616.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-jzNEfzUo7Zg/UibQJqs2hYI/AAAAAAACouI/cxLKJhTRF3w/s" + size + "/2013-08-12%252520-%252520194%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2616.jpg\" /></a><br><b><i>Wall Nut atop Half Dome after ascending the Northwest Regular Route! Ascenders and alpine aiders came in handy. </i></b>";
+      pop[62] = "<a href=\"https://lh3.googleusercontent.com/-lIukoA17hrk/UibQP4WtZZI/AAAAAAACovQ/8EPMAkCaxS8/s" + sizeLarge + "/2013-08-12%252520-%252520199%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000263.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-lIukoA17hrk/UibQP4WtZZI/AAAAAAACovQ/8EPMAkCaxS8/s" + size + "/2013-08-12%252520-%252520199%252520-%252520Half%252520Dome%252520NWRR%252520-%252520P1000263.jpg\" /></a><br><b><i>Me and Nic atop Half Dome after climbing the Northwest Regular Route. (by Nic Risser) </i></b>";
+      pop[63] = "<a href=\"https://lh3.googleusercontent.com/-qLfx-e3oj_Y/UibQW4cZvOI/AAAAAAACowQ/zDP5rnU3FPw/s" + sizeLarge + "/2013-08-12%252520-%252520209%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2620.jpg\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-qLfx-e3oj_Y/UibQW4cZvOI/AAAAAAACowQ/zDP5rnU3FPw/s" + size + "/2013-08-12%252520-%252520209%252520-%252520Half%252520Dome%252520NWRR%252520-%252520IMG_2620.jpg\" /></a><br><b><i>Nic descending the Cables at sunset. Similar to my experience of climbing Snake Dike, this was one of the more unsettling parts of the climb. </i></b>";
+
+
+  //Photo coordinates in image
+  var photoCoords = new Array();
+      photoCoords[0] = [5255, 1850];
+      photoCoords[1] = [5255, 1850];
+      photoCoords[2] = [5255, 1850];
+      photoCoords[3] = [5255, 1850];
+      photoCoords[4] = [5255, 1850];
+      photoCoords[5] = [5255, 1850];
+      photoCoords[6] = [5255, 1850];
+      photoCoords[7] = [5255, 1850];
+      photoCoords[8] = [5255, 1850];
+      photoCoords[9] = [5260, 1800];
+                 
+    
+    //Belay Icon formation types for different zoom levels
+    // var myiconSize = [66, 66];     //Original icon size
+    // var iconAnchorSize = [33, 33];    //Original icon anchor location within icon
+    
+    // var myIconPhoto = new Array();  //For zoom < 17
+      // var data = scaleIcon(0.25, myiconSize, iconAnchorSize);
+      // for (i=0; i <= photoCoords.length-1; i++){
+      // myIconPhoto[i] = L.icon({
+        // iconUrl: '../public/images/marker-icon-photo.png',
+        // iconSize: [scaledIconSize[0],scaledIconSize[1]],
+        // iconAnchor: [scaledAnchorSize[0],scaledAnchorSize[1]],
+        // className: 'myIconPhoto' + (i + 1)
+      // });
+      // }
+
+    //Constructing all photo markers w/ position
+    // var photos = new Array();
+    // for (i=0; i <= photoCoords.length-1; i++){
+      // photos[i] = _marker(photoCoords[i], {icon:myIconPhoto[i]}).bindPopup(pop1);
+       // Spiderfier.addMarker(photos[i]);
+    // }
+    
+    //Defining label coordinates, anchor offset, and text
+    var size = 50
+    var iconAnchorSize = [25, 25];    //Original icon anchor location within icon
+    var myPhotos = new Array();
+        myPhotos[0] = new Array([5255, 1850], iconAnchorSize, '<img src="https://lh5.googleusercontent.com/-yTKpq_Nb370/UibOfsVoMOI/AAAAAAACojg/sViC2RZuJmc/s' + size + '/2013-08-12%20-%20162%20-%20Half%20Dome%20NWRR%20-%20IMG_2593.jpg" />');
+        myPhotos[1] = new Array([5255, 1850], iconAnchorSize, '<img src="https://lh3.googleusercontent.com/-DcRpVvD5s30/UibOrLjwT6I/AAAAAAACokY/8IsQu8zmAsE/s' + size + '/2013-08-12%20-%20164%20-%20Half%20Dome%20NWRR%20-%20IMG_2597.jpg" />');
+        myPhotos[2] = new Array([5255, 1850], iconAnchorSize, '<img src="https://lh4.googleusercontent.com/-1agkspaq16o/UibOyEkV37I/AAAAAAAColM/AKgdoHMtwNs/s' + size + '/2013-08-12%20-%20166%20-%20Half%20Dome%20NWRR%20-%20IMG_2598.jpg" />');
+        myPhotos[3] = new Array([5255, 1850], iconAnchorSize, '<img src="https://lh5.googleusercontent.com/--SOkYhauGSs/UibO_sH0QZI/AAAAAAAComg/8iEJ_ihQ9FQ/s' + size + '/2013-08-12%20-%20169%20-%20Half%20Dome%20NWRR%20-%20P1000248.jpg" />');
+        myPhotos[4] = new Array([5255, 1850], iconAnchorSize, '<img src="https://lh4.googleusercontent.com/-g3kSWfaR1Xw/UibPHNFxINI/AAAAAAAConA/7blvg5u-h_k/s' + size + '/2013-08-12%20-%20171%20-%20Half%20Dome%20NWRR%20-%20IMG_2601.jpg" />');
+        myPhotos[5] = new Array([5255, 1850], iconAnchorSize, '<img src="https://lh5.googleusercontent.com/-rcea82NylvI/UibPSTVZzbI/AAAAAAACooA/EojfhApYhes/s' + size + '/2013-08-12%20-%20173%20-%20Half%20Dome%20NWRR%20-%20IMG_2604.jpg" />');
+        myPhotos[6] = new Array([5255, 1850], iconAnchorSize, '<img src="https://lh4.googleusercontent.com/-ICheV8dTfgc/UibOdDlp0bI/AAAAAAACojI/MERHMaYr-_8/s' + size + '/2013-08-12%20-%20161%20-%20Half%20Dome%20NWRR%20-%20IMG_2592.jpg" />');
+        myPhotos[7] = new Array([5255, 1850], iconAnchorSize, '<img src="https://lh5.googleusercontent.com/-Unz3e9zO5kM/UibOal74xfI/AAAAAAACoio/_T72l_ubKME/s' + size + '/2013-08-12%20-%20160%20-%20Half%20Dome%20NWRR%20-%20IMG_2590.jpg" />');
+        myPhotos[8] = new Array([5255, 1850], iconAnchorSize, '<img src="https://lh3.googleusercontent.com/-hpq1OEB-Yu0/UibOkfpzgWI/AAAAAAACoj4/RCsUQs4ZCEo/s' + size + '/2013-08-12%20-%20163%20-%20Half%20Dome%20NWRR%20-%20IMG_2596.jpg" />');
+        myPhotos[9] = new Array([5260, 1800], iconAnchorSize, '<img src="https://lh3.googleusercontent.com/-K6Yn2q-yJk8/UibO6DJ802I/AAAAAAAComA/PpfZxHJBV-M/s' + size + '/2013-08-12%20-%20168%20-%20Half%20Dome%20NWRR%20-%20P1000247.jpg" />');
+    
+    //Label Icon formation types for different labels
+    var myPhotoIcon = new Array(); 
+    for (i=0; i <= myPhotos.length-1; i++){
+        myPhotoIcon[i] = L.divIcon({
+          className: 'my-div-icon-photo', 
+          iconSize: null, //'null' allows div to be resized in CSS. Otherwise, CSS sizing is overwritten by JS.
+          iconAnchor: myPhotos[i][1], 
+          html: myPhotos[i][2]});
+    }
+    
+    var myPhotoIconHover = new Array(); 
+    for (i=0; i <= myPhotos.length-1; i++){
+        myPhotoIconHover[i] = L.divIcon({
+          className: 'my-div-icon-photo-hover ', 
+          iconSize: [35, 50], //'null' allows div to be resized in CSS. Otherwise, CSS sizing is overwritten by JS.
+          iconAnchor: myPhotos[i][1], 
+          // html: '<img src=/"https://shop.aph.org/wcsstore/APHConsumerDirect/images/catalog/products_large/1-07516-00_APH_Techno_Ball.jpg/" />'});
+          html: '<img src=/"../public/images/editmarker.png" />'});
+    }
+
+    var myPhotoIconClick = new Array(); 
+    for (i=0; i <= myPhotos.length-1; i++){
+        myPhotoIconClick[i] = L.divIcon({
+          className: 'my-div-icon-photo-click', 
+          iconSize: null, //'null' allows div to be resized in CSS. Otherwise, CSS sizing is overwritten by JS.
+          iconAnchor: myPhotos[i][1], 
+          html: myPhotos[i][2]});
+    }
+   
+    //Constructing all label markers w/ position
+    var photos = new Array();
+    for (i=0; i <= myPhotos.length-1; i++){
+      // photos[i] = _marker(myPhotos[i][0], {icon:myPhotoIcon[i], title:'Rootbeer and smashed cupcakes! In this state we decided to forgo lighting candles . . .'}).bindPopup(pop1);
+      photos[i] = _marker(myPhotos[i][0], {icon:myPhotoIcon[i]}).bindPopup(pop[i]);
+      Spiderfier.addMarker(photos[i]);
+    }
+    
+    //--- Change icon on click
+    //I like this effect
+    //For some reason this only works when defined explicitly, rather than in a loop
+    // for (i=0; i <= myPhotos.length-1; i++){
+      // photos[i].on('click', function(e){
+        // photos[i].setIcon(myPhotoIconClick[i]);
+      // });
+    // }
+      
+      photos[0].on('click', function(e){
+        photos[0].setIcon(myPhotoIconClick[0])
+      });
+      photos[1].on('click', function(e){
+        photos[1].setIcon(myPhotoIconClick[1])
+      });
+      photos[2].on('click', function(e){
+        photos[2].setIcon(myPhotoIconClick[2])
+      });
+      photos[3].on('click', function(e){
+        photos[3].setIcon(myPhotoIconClick[3])
+      });
+      photos[4].on('click', function(e){
+        photos[4].setIcon(myPhotoIconClick[4])
+      });
+      photos[5].on('click', function(e){
+        photos[5].setIcon(myPhotoIconClick[5])
+      });
+      photos[6].on('click', function(e){
+        photos[6].setIcon(myPhotoIconClick[6])
+      });
+      photos[7].on('click', function(e){
+        photos[7].setIcon(myPhotoIconClick[7])
+      });
+      photos[8].on('click', function(e){
+        photos[8].setIcon(myPhotoIconClick[8])
+      });
+      photos[9].on('click', function(e){
+        photos[9].setIcon(myPhotoIconClick[9])
+      });
+
+      //--- Change icon on hover
+      // For some reason it only loads a blank image, and then fails to resize on the mouseout, although the html is loaded
+      // photos[0].on('mouseover', function(e){
+        // photos[0].setIcon(myPhotoIconHover[0]);
+      // });
+      // photos[1].on('mouseover', function(e){
+        // photos[1].setIcon(myPhotoIconHover[1]);
+      // });
+      // photos[2].on('mouseover', function(e){
+        // photos[2].setIcon(myPhotoIconHover[2]);
+      // });
+      // photos[3].on('mouseover', function(e){
+        // photos[3].setIcon(myPhotoIconHover[3]);
+      // });
+      // photos[4].on('mouseover', function(e){
+        // photos[4].setIcon(myPhotoIconHover[4]);
+      // });
+      // photos[5].on('mouseover', function(e){
+        // photos[5].setIcon(myPhotoIconHover[5]);
+      // });
+      // photos[6].on('mouseover', function(e){
+        // photos[6].setIcon(myPhotoIconHover[6]);
+      // });
+      // photos[7].on('mouseover', function(e){
+        // photos[7].setIcon(myPhotoIconHover[7]);
+      // });
+      // photos[8].on('mouseover', function(e){
+        // photos[8].setIcon(myPhotoIconHover[8]);
+      // });
+      // photos[9].on('mouseover', function(e){
+        // photos[9].setIcon(myPhotoIconHover[9]);
+      // });
+      // photos[9].on('mouseout', function(e){
+        // photos[9].setIcon(myPhotoIcon[9]);
       // });
 
 
-  //Prepare PopUps
-  var pop1 = "<h2>Pitch n</h2><a href=\"https://picasaweb.google.com/lh/photo/w2fL5fz4UoRzfWOUqeK9ldMTjNZETYmyPJy0liipFm0?feat=directlink\" target=\"_blank\"><img src=\"https://lh3.googleusercontent.com/-OPNp3bc7_G0/UibOVAjw6aI/AAAAAAACohs/bTELWpH-wLs/s300/2013-08-11%2520-%2520158a%2520-%2520Half%2520Dome%2520NWRR%2520-%2520IMG_2586.jpg\" /></a><br><b><i>P13, P14, and P15 (5.7, 5.7-5.9, 5.9) chimney pitches that I would link in one 230' pitch with our 70m rope. Good thing chimneys are easy to climb in the dark!</i></b>";
- 
-  //Prepare Markers  
-    // Settings for IconBelay in its original size
-    // iconSize: [60, 73],
-    // iconAnchor: [19, 51],
- 
- 
-// Need to figure out how to make belay icon object
-// Simplifies code for many icons, especially changes
-// Should write code to resize icons depending on zoom level, which would be done much more easily by changing classes!
-
-  var _iconSizeX = 30;
-  var _iconSizeY = 36;
-  var _iconSize = [_iconSizeX, _iconSizeY];
-
-  myIconBelay1 = L.icon({
-    iconUrl: '../public/images/marker-icon-belay1.png',
-    iconSize: _iconSize,
-    iconAnchor: [9, 25],
-    className: 'myIconbelay1'
+      
+    var currentPhoto = new Array
+    for (var i = 0; i < photos.length; i++) {
+        var currentPhoto = photos[i];
+        // currentPhoto.on('click', photos[i].setIcon(myPhotoIconClick[i]));
+        // currentPhoto.on('mouseover', currentPhoto.setIcon(myPhotoIconHover[i]));
+        
+        // https://groups.google.com/forum/#!topic/leaflet-js/9tyvCzqFB1M
+        // http://jsfiddle.net/jcocoder/YzhwZ/2/
+        //---Works for mouseover popup, but a delay would be nice
+        // currentPhoto.on('mouseover', currentPhoto.openPopup.bind(currentPhoto));
+        // currentPhoto.on('mouseout',  currentPhoto.closePopup);
+        
+        //---Attempt to add Timer using JQuery. Works for alert but not popup. If I use whole popup event call again, it will work the next time I mouseover the element.
+        // var timer;
+        // currentPhoto.addEventListener('mouseover', function(e) {
+            // timer = setTimeout(function() {
+                // currentPhoto.openPopup.bind(currentPhoto);  
+                // alert('Hi there'); 
+            // }, 2000);
+        // }, true);
+        // currentPhoto.addEventListener('mouseout', function(e) {
+            // currentPhoto.closePopup;
+            // clearTimeout(timer);
+        // }, true); 
+        
+        //---Attempt to add Timer using JavasScript. Breaks map
+        // var delay = function(currentPhoto, callback) {
+          // var timeout = null;
+          // currentPhoto.onmouseover = function() {
+                // timeout = setTimeout(callback, 1000);
+          // };
+          // currentPhoto.onmouseout = function() {
+          // clearTimeout(timeout);
+          // }
+        // };
+        // delay(currentPhoto, function(){
+          // currentPhoto.openPopup.bind(currentPhoto);
+        // };
+        // currentPhoto.on('mouseout',  currentPhoto.closePopup);
+    };
+        
+      
+        
+    
+      
+    //Adds all belay markers to one layer
+    var photosLayer = L.layerGroup(photos).addTo(map);
+  
+  Spiderfier.addListener('spiderfy', function(markers) {
+    // for (var i = 0, len = markers.length; i < len; i ++) markers[i].setIcon(new lightIcon());    //Assigns a new icon to the 'spiderfied' icons upon expansion
+    map.closePopup();   // This prevents the popup from initiating upon the first click to spiderfy
   });
   
-  //--------Belay Icons----------
-  
-  // Creating belay icons from belay icon object. Not working but kept for now.
-  // var myIconBelay1 = new BelayIcon({iconUrl: '../public/images/marker-icon-belay1.png'});
-      //myIconBelay2 = new BelayIcon({iconUrl: '../public/images/marker-icon-belay2.png'});
-  
-  
-  // var marker = _marker([8000, 4000]).addTo(map).bindPopup(pop1);  
-  
-  
-  
-  // Belay should be able to be combined into a loop function to define it, 
-  // ideally automatically scaled to whatever size of a coordinate storage array the user writes, with a pair of coordinates for each icon
-  // with a check such that if there is no corresponding myIconBelay & pop #, that a default or highest # one is used
-
-  // for (var i=0; i<Belay.length, i++){
-    // var iconBelay = "myIconBelay" + i
-    // var Belay = "belay" + i
-    
-    // var Belay1 = _marker([4162, 6600], {icon:iconBelay}).addTo(map).bindPopup(pop1)
-  // }
-   
-  // var belay1 = _marker([4162, 6600], {icon:myIconBelay1}).addTo(map).bindPopup(pop1),
-      // belay2 = _marker([2000, 2000], {icon:myIconBelay2}).addTo(map).bindPopup(pop2),
-      // belay3 = _marker([2000, 2000], {icon:myIconBelay3}).addTo(map).bindPopup(pop3),
-      // belay4 = _marker([2000, 2000], {icon:myIconBelay4}).addTo(map).bindPopup(pop4),
-      // belay5 = _marker([2000, 2000], {icon:myIconBelay5}).addTo(map).bindPopup(pop5),
-      // belay6 = _marker([2000, 2000], {icon:myIconBelay6}).addTo(map).bindPopup(pop6),
-      // belay7 = _marker([2000, 2000], {icon:myIconBelay7}).addTo(map).bindPopup(pop7),
-      // belay8 = _marker([2000, 2000], {icon:myIconBelay8}).addTo(map).bindPopup(pop8),
-      // belay9 = _marker([2000, 2000], {icon:myIconBelay9}).addTo(map).bindPopup(pop9),
-      // belay10 = _marker([2000, 2000], {icon:myIconBelay10}).addTo(map).bindPopup(pop10),
-      // belay11 = _marker([2000, 2000], {icon:myIconBelay11}).addTo(map).bindPopup(pop11),
-      // belay12 = _marker([2000, 2000], {icon:myIconBelay12}).addTo(map).bindPopup(pop12),
-      // belay13 = _marker([2000, 2000], {icon:myIconBelay13}).addTo(map).bindPopup(pop13),
-      // belay14 = _marker([2000, 2000], {icon:myIconBelay14}).addTo(map).bindPopup(pop14),
-      // belay15 = _marker([2000, 2000], {icon:myIconBelay15}).addTo(map).bindPopup(pop15),
-      // belay16 = _marker([2000, 2000], {icon:myIconBelay16}).addTo(map).bindPopup(pop16),
-      // belay17 = _marker([2000, 2000], {icon:myIconBelay17}).addTo(map).bindPopup(pop17),
-      // belay18 = _marker([2000, 2000], {icon:myIconBelay18}).addTo(map).bindPopup(pop18),
-      // belay19 = _marker([2000, 2000], {icon:myIconBelay19}).addTo(map).bindPopup(pop19),
-      // belay20 = _marker([2000, 2000], {icon:myIconBelay20}).addTo(map).bindPopup(pop20),
-      // belay21 = _marker([2000, 2000], {icon:myIconBelay21}).addTo(map).bindPopup(pop21),
-      // belay22 = _marker([2000, 2000], {icon:myIconBelay22}).addTo(map).bindPopup(pop22),
-      // belay23 = _marker([2000, 2000], {icon:myIconBelay23}).addTo(map).bindPopup(pop23),
-      // belay24 = _marker([2000, 2000], {icon:myIconBelay24}).addTo(map).bindPopup(pop24),
-      // belay25 = _marker([2000, 2000], {icon:myIconBelay25}).addTo(map).bindPopup(pop25);
- 
-  var belay1 = _marker([4162, 6600], {icon:myIconBelay1, title:'P1'}).bindPopup(pop1),
-      belay2 = _marker([4080, 6240], {icon:myIconBelay1}).bindPopup(pop1),
-      belay3 = _marker([4040, 5950], {icon:myIconBelay1}).bindPopup(pop1),
-      belay4 = _marker([3986, 5460], {icon:myIconBelay1}).bindPopup(pop1),
-      belay5 = _marker([4026, 5232], {icon:myIconBelay1}).bindPopup(pop1),
-      belay6 = _marker([3892, 4844], {icon:myIconBelay1}).bindPopup(pop1),
-      belay7 = _marker([3890, 4380], {icon:myIconBelay1}).bindPopup(pop1),
-      belay8 = _marker([4026, 4048], {icon:myIconBelay1}).bindPopup(pop1),
-      belay9 = _marker([4182, 3872], {icon:myIconBelay1}).bindPopup(pop1),
-      belay10 = _marker([4284, 3736], {icon:myIconBelay1}).bindPopup(pop1),
-      belay11 = _marker([4426, 3580], {icon:myIconBelay1}).bindPopup(pop1),
-      belay12 = _marker([4630, 3144], {icon:myIconBelay1}).bindPopup(pop1),
-      belay13 = _marker([4652, 2838], {icon:myIconBelay1}).bindPopup(pop1),
-      belay14 = _marker([4664, 2646], {icon:myIconBelay1}).bindPopup(pop1),
-      belay15 = _marker([4746, 2370], {icon:myIconBelay1}).bindPopup(pop1),
-      belay16 = _marker([4918, 1990], {icon:myIconBelay1}).bindPopup(pop1),
-      belay17 = _marker([5212, 1828], {icon:myIconBelay1}).bindPopup(pop1),  //Big Sandy
-      belay18 = _marker([5226, 1530], {icon:myIconBelay1}).bindPopup(pop1),
-      belay19 = _marker([5270, 1250], {icon:myIconBelay1}).bindPopup(pop1),
-      belay20 = _marker([5308, 1016], {icon:myIconBelay1}).bindPopup(pop1),
-      belay21 = _marker([5104, 884], {icon:myIconBelay1}).bindPopup(pop1),
-      belay22 = _marker([4966, 760], {icon:myIconBelay1}).bindPopup(pop1),
-      belay23 = _marker([4840, 574], {icon:myIconBelay1}).bindPopup(pop1);
- 
- 
- 
- 
- // Only add '.addTo(map)' to the control instantiation and not the symbol definition if it is desired 
- // to leave the symbol invisible upon load
- 
- //Prepare Circles
-  // _circlePhoto = _circle([4000, 1000], 10, {
-   // color: 'red',
-   // weight: 2,
-   // fillColor: '#f03',
-   // fillOpacity: 0.5
+  // Spiderfier.addListener('unspiderfy', function(markers) {
+    // for (var i = 0, len = markers.length; i < len; i ++) markers[i].setIcon(new darkIcon());     //Assigns original icon to the 'spiderfied' icons upon closure
   // });
-  
-  var circle = _circle([4000, 1000], 10, {
-   color: 'red',
-   weight: 2,
-   fillColor: '#f03',
-   fillOpacity: 0.5
-  }).addTo(map).bindPopup(pop1);
 
-  //Prepare Polygons
+  
+  //--------Polygons----------
+  //TO DO:
+  //  1. Create remaining polygons
+  //  2. Create shared options object?
   
   //Thank God Ledge
   
@@ -275,22 +639,13 @@ var prepareLayers = function () {
   // The Chimneys
   
   
-  //Prepare Labels
-  //use DivIcons for labels http://leafletjs.com/reference.html#divicon
-      var myDivTxt = 'Mooo! I say! Moo!'
-
-      var myDivIcon = L.divIcon({
-          className: 'my-div-icon', 
-          //iconSize: new L.Point(700, 400),
-          //iconSize: [20, 20],
-          iconSize: null, //'null' allows div to be resized in CSS. Otherwise, CSS sizing is overwritten by JS.
-          // iconAnchor: [9, 25], //offset from top left corner
-          html:myDivTxt});
-
-      // L.marker(unproject([7000, 4500]), {icon:myDivIcon}).addTo(map);
-      var myDivIconMoo = _marker([7000, 4500], {icon:myDivIcon}).addTo(map);
+  //--------Prepare Polylines--------
+  //TO DO:
+  //  1.  Death Slabs Approach?
+  //  2.  Cables Approach?
+  //  3.  Route line segments colored & patterned for climbing difficulty & tension traverse?  
   
-  //Prepare Polylines
+  
   //Note: For now, the best method for generating large arrays for complex polylines is follows:
       // 1. Draw a vector path in Adobe Photoshop over the original, full size image.
       // 2. Select 'Image>Image Rotation>Flip Canvas Vertical' to invert the line. This is important as the y-coordinate system is inverse in Photoshop to Leaflet.
@@ -570,42 +925,10 @@ var prepareLayers = function () {
   ]);
   
   //Prepare Layer Groups
+  // Only add '.addTo(map)' to the control instantiation and not the symbol definition if it is desired 
+  // to leave the symbol invisible upon load
     var route = L.layerGroup([
       routeNWRR
-    ]).addTo(map);
-
-    var belays = L.layerGroup([
-      belay1,
-      belay2,
-      belay3,
-      belay4,
-      belay5,
-      belay6,
-      belay7,
-      belay8,
-      belay9,
-      belay10,
-      belay11,
-      belay12,
-      belay13,
-      belay14,
-      belay15,
-      belay16,
-      belay17,
-      belay18,
-      belay19,
-      belay20,
-      belay21,
-      belay22,
-      belay23
-    ]).addTo(map);
-  
-    var photos = L.layerGroup([
-      circle
-    ]).addTo(map);
-  
-    var labels = L.layerGroup([
-      myDivIconMoo
     ]).addTo(map);
 
     var features = L.layerGroup([
@@ -613,40 +936,149 @@ var prepareLayers = function () {
       Visor2
     ]).addTo(map);
  
-  //Prepare Layer Controls
+  //--------Prepare Layer Controls--------
+  //TO DO:
+  //  1.  Would be nice to not have the baseMaps listing, or at least get the radio button automatically selected
   var baseMaps = {
   "Half Dome NW Face": map
   };
   
   var overlayMaps = {
-  "Belays": belays,
+  "Belays": belaysLayer,
   "Northwest Regular Route": routeNWRR,
-  "Photos": photos,
-  "Labels": labels,
+  "Photos": photosLayer,
+  "Labels": labelsLayer,
   "Features": features
   };
-  
+
+  //Layers Control
   L.control.layers(baseMaps,overlayMaps).addTo(map);
-  L.control.fullscreen({ position: 'topleft', title: 'Show me the fullscreen !' }).addTo(map); 
+  
+  //======Attempts at getting drawing plugins to work
+  
+  //----Plotter----Unsuccessful. Tried altering .js script
+  // var plottedPolyline = L.Polyline.Plotter([
+  // var plottedPolyline = _polyline.Plotter([
+        // [unproject(500), unproject(500)],
+        // [unproject(3000), unproject(1000)],
+        // [unproject(2000), unproject(2000)]
+        //---
+        // [unproject(500, 500)],
+        // [unproject(3000, 1000)],
+        // [unproject(2000, 2000)]
+        //--
+        // unproject([500, 500]),
+        // unproject([3000, 1000]),
+        // unproject([2000, 2000])
+        //---
+        // unproject([500, 500],
+                  // [3000, 1000],
+                  // [2000, 2000])
+    // ],{
+        // weight: 5
+    // }).addTo(map);
+    
+      // var plottedPolyline = _plotter([
+                  // [500, 500],
+                  // [3000, 1000],
+                  // [2000, 2000]
+    // ],{
+        // weight: 5
+    // }).addTo(map);
+  
+  //---Leaflet Draw
+  //Works! Now to extract the data ...
+  var drawnItems = new L.FeatureGroup();
+		map.addLayer(drawnItems);
 
-//Donny, it would be interesting to see if we could alter this to give scale in pixels, 
-// or allow us to define a custom units scale in the picture
- L.control.scale().addTo(map);   
- 
+		var drawControl = new L.Control.Draw({
+			draw: {
+				position: 'topleft',
+				polygon: {
+					title: 'Draw a sexy polygon!',
+					allowIntersection: false,
+					drawError: {
+						color: '#b00b00',
+						timeout: 1000
+					},
+					shapeOptions: {
+						color: '#bada55'
+					},
+					showArea: true
+				},
+				polyline: {
+					metric: false
+				},
+				circle: {
+					shapeOptions: {
+						color: '#662d91'
+					}
+				}
+			},
+			edit: {
+				featureGroup: drawnItems
+			}
+		});
+		map.addControl(drawControl);
 
-//Resizing layers based on zoom level
+		map.on('draw:created', function (e) {
+			var type = e.layerType,
+				layer = e.layer;
 
-//So far I can return the correct zoom level, and change the _iconSize variables based on the level, 
-// but the icons don't seem to be updating
- // var zoomLevel = map.getZoom();
-  ////alert(zoomLevel);
-  // map.on('zoomend', function(e){
-      // var zoomLevel = map.getZoom();
-      // var _iconSizeX = 30*(1+(18-zoomLevel)), _iconSizeY = 36;
-      ////alert(_iconSizeX);
-      ////alert(_iconSizeY);
-      // var _iconSize = [_iconSizeX, _iconSizeY];
-      ////alert(zoomLevel);
-      // return belays.addTo(map);
-      // });
+			if (type === 'marker') {
+				layer.bindPopup('A popup!');
+			}
+
+			drawnItems.addLayer(layer);
+		});
+  
+  
 };
+
+//------------ Perhaps use for roughly showing bolts for bolt ladders & TT anchors?      
+ // var circle = _circle([4000, 1000], 10, {
+   // color: 'red',
+   // weight: 2,
+   // fillColor: '#f03',
+   // fillOpacity: 0.5
+  // }).addTo(map).bindPopup(pop1);
+
+
+// var zoomLevel = map.getZoom();
+      // alert(zoomLevel);
+     
+  // =========
+
+   // map.on('zoomend', function(e){
+      // var zoomLevel = map.getZoom();
+      // alert(zoomLevel);
+      // };
+      
+      
+    // This is for possibly having div icons with numbers for the belays
+    // var myDivIconBelay = L.divIcon({
+        // className: 'my-div-icon-belay', 
+        //iconSize: new L.Point(700, 400),
+        //iconSize: [20, 20],
+        // iconSize: null, //'null' allows div to be resized in CSS. Otherwise, CSS sizing is overwritten by JS.
+        // iconAnchor: [9, 25], //offset from top left corner
+        // html:'1'});
+    // var myDivIconBelayTest = _marker([4162+100, 6600+100], {icon:myDivIconBelay}).addTo(map);   
+
+  //=======Spiderfy
+    //Adds Popup to icon
+      // var popups = new Array();
+      // for (i=0; i <= myPhotos.length-1; i++){
+        // popups[i] = new L.Popup({closeButton: false, offset: new L.Point(0.5, -24)});
+        // Spiderfier.addListener('click', function(photos) {
+          // popups[i].setContent(photos[i].desc);
+          // popups[i].setLatLng(photos[i].getLatLng());
+          // map.openPopup(popups[i]);
+        // });
+      // }
+    
+    //Would be nice to allow double-click of particular icon to bring up popup?
+    // myPhotoIconPop.on('dbclick', function(e) {
+      // alert('double clicked!');
+    // });
+        
