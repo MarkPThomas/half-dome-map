@@ -19,7 +19,7 @@ var initialize = function () {
   var northEast = map.unproject([16384, 0], map.getMaxZoom());
 
   map.setMaxBounds(new L.LatLngBounds(southWest, northEast));
-  var Attrib = 'Map data &copy; Mark Porter Thomas';
+  var Attrib = 'Map data &copy; <a href="http://www.markpthomas.com" target="_blank">Mark Porter Thomas</a>';
   var imgURL = '../public/map_tiles/{z}/map_tile_{x}_{y}.jpg'
   // map_tiles directory not included with repo because map tiles
   // take up ~ 200MB.
@@ -32,6 +32,7 @@ var initialize = function () {
     //---Uses Plugin
     //TO DO:
     //  1. Adjust JS file to keep map from shifting background image
+    //    1a. Plugin creater says this cannot currently be done. He has created an incident for an enhancement for this
     var miniMapParams = new L.TileLayer('../public/map_tiles/9/map_tile_0_0.jpg', {minZoom:  9, maxZoom: 18, attribution: Attrib });
     var miniMap = new L.Control.MiniMap(miniMapParams, {zoomLevelFixed:12, toggleDisplay: true, width: 256, height: 130}).addTo(map);   //autoToggleDisplay: true
     
@@ -41,10 +42,10 @@ var initialize = function () {
     
     //---Scale Control
     //---Uses Plugin
+      // Custom scale in meters
       map.addControl(new L.Control.ScaleCustom({
           metric: false,
           imperial: false,
-          // Custom scale in meters
           custom: function(maxMeters, leafletDefaultRoundingFunction) {
             var maxPixels = maxMeters / 5.047214805, 
               pixels;
@@ -61,7 +62,8 @@ var initialize = function () {
             }
           }
         }));
-  map.addControl(new L.Control.ScaleCustom({
+      //Custom scale in feet
+      map.addControl(new L.Control.ScaleCustom({
           metric: false,
           imperial: false,
           custom: function(maxMeters, leafletDefaultRoundingFunction) {
@@ -80,18 +82,6 @@ var initialize = function () {
             }
           }
         }));
-  
-  //---- Remove this?
-  myIcon = L.icon({
-    iconUrl: '../public/images/marker-icon.png',
-    iconRetinaUrl: '../public/images/marker-icon@2x.png',
-    //iconSize: [38, 95],
-    //iconAnchor: [22, 94],
-    //popupAnchor: [-3, -76],
-    shadowUrl: '../public/images/marker-shadow.png',
-    //shadowSize: [68, 95],
-    //shadowAnchor: [22, 94]
-  });
   };
   
 window.onload = function () {

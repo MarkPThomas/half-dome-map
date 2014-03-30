@@ -4,7 +4,7 @@
 config/
 settings.json
 *.log
-*.png
+
 *.sh
 .DS_Store
 *.min.js
@@ -12,3 +12,4 @@ TAGS
 .tern-*
 *.zip
 /client/plugins
+/devel
