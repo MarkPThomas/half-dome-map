@@ -2,9 +2,11 @@
 
 Use [Leaflet](http://leafletjs.com) to zoom in / pan around a [tiled](https://github.com/rktjmp/tileup) 16,614px by 8,406px composite photograph of the northwest face of [Half Dome](https://en.wikipedia.org/wiki/Half_Dome).
 
-## Coming Soon
+## Demo
 
 Interact with overlays that detail climbing routes, share experiences, and offer tips.
+
+See the current version here: [http://038dbbc.netsolhost.com/maps-gis/half-dome-map/](http://038dbbc.netsolhost.com/maps-gis/half-dome-map/ "Half Dome Interactive Map")
 
 ## Development
 
