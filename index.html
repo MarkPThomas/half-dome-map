@@ -58,12 +58,12 @@
 <p>I created the image with photos taken using a 7-year-old Nikon D40 DLSR, with a Nikkor kit lens. (55-200mm zoom). I merged the image together in Adobe Photoshop, but not without some trial and error for such a big project.</p>
 
 <p><img src="https://lh5.googleusercontent.com/-zUrB5HbC7LU/UmdJU1LeBTI/AAAAAAADblc/Kdet1XewOnM/s800/2013-10-20%2520-%2520043%2520-%2520Solo%2520TR%2520%2526%2520North%2520Dome%2520-%2520ObamaCareToHalfDome.jpg" alt="Result of attempting to blend all of the photos at once in Adobe Photoshop.">
-Result of attempting to blend all of the photos at once in Adobe Photoshop.</p>
+<em><strong>Result of attempting to blend all of the photos at once in Adobe Photoshop.</strong></em></p>
 
 <p>However, with some experimentation, I found a way to get the merging to work correctly.</p>
 
 <p><img src="https://lh3.googleusercontent.com/-YR35dlwmxf0/U1MSGTFSuCI/AAAAAAADdsc/O_YHAv-Uzn0/s800/2013-10-20%2520-%2520046%2520-%2520Solo%2520TR%2520%2526%2520North%2520Dome%2520-%2520IMG_3387%2520-%2520process.jpg" alt="NW Face of Half Dome, roughly as I had divided it up into close up photographs taken with a 200mm zoom lens.">
-NW Face of Half Dome, roughly as I had divided it up into close up photographs taken with a 200mm zoom lens.</p>
+<em><strong>NW Face of Half Dome, roughly as I had divided it up into close up photographs taken with a 200mm zoom lens.</strong></em></p>
 
 <p>Once the image was assembled, I had the problem that the image was 75MB, which took far too long to load on a web browser to be a feasible way for a user to quickly view the image. There are a number of JavaScript methods &amp; plugins for  photo enlarging, but most did not allow some form of interactivity on the map that would scale and pan with the image.</p>
 
@@ -71,8 +71,8 @@ NW Face of Half Dome, roughly as I had divided it up into close up photographs t
 
 <p>So I tried tiling, which handles the size and sizing issues. Using this system also allowed for using various interactive elements (icons, polylines, shapes), positioned by latitude  longitude coordinates, as this system is normally used for maps. Since my project was a flat image and not a curved 3D surface on Earth, I had to write some 'unproject' methods in my scripts, but otherwise everything worked together smoothly.</p>
 
-<p><img src="https://lh3.googleusercontent.com/-OUfSmeGBKPs/U1MSJcBaZ4I/AAAAAAADd68/qHD2JIWWXiA/s800/Tiling%2520Concept.jpg" alt="I used Tiling to make to make the high resolution Half Dome image feasible for web viewing, with panning and zoom navigation. This is the same technique that Google Maps uses.">
-I used Tiling to make to make the high resolution Half Dome image feasible for web viewing, with panning and zoom navigation. This is the same technique that Google Maps uses.</p>
+<p><img src="https://lh3.googleusercontent.com/-OUfSmeGBKPs/U1MSJcBaZ4I/AAAAAAADd68/qHD2JIWWXiA/s800/Tiling%2520Concept.jpg" alt="I used Tiling to make to make the high resolution Half Dome image feasible for web viewing, with panning and zoom navigation. This is the same technique that Google Maps uses."> 
+<strong><em>I used Tiling to make to make the high resolution Half Dome image feasible for web viewing, with panning and zoom navigation. This is the same technique that Google Maps uses.</em></strong></p>
 
 <p>The tiling was done using a free Ruby script that automates the process, taking a few seconds to size, crop, and save the files in a format &amp; folder structure that can be read by code for automatically re-assembling the portions of the image that are in view of your screen. There are various Ruby and Python scripts available to do such things, although figuring out how to get them to work is tedious (I really don't know either programming language).</p>
 
