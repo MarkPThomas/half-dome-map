@@ -71,8 +71,9 @@
 
 <p>So I tried tiling, which handles the size and sizing issues. Using this system also allowed for using various interactive elements (icons, polylines, shapes), positioned by latitude  longitude coordinates, as this system is normally used for maps. Since my project was a flat image and not a curved 3D surface on Earth, I had to write some 'unproject' methods in my scripts, but otherwise everything worked together smoothly.</p>
 
-<p><img src="https://lh3.googleusercontent.com/-OUfSmeGBKPs/U1MSJcBaZ4I/AAAAAAADd68/qHD2JIWWXiA/s800/Tiling%2520Concept.jpg" alt="I used Tiling to make to make the high resolution Half Dome image feasible for web viewing, with panning and zoom navigation. This is the same technique that Google Maps uses."> 
-<strong><em>I used Tiling to make to make the high resolution Half Dome image feasible for web viewing, with panning and zoom navigation. This is the same technique that Google Maps uses.</em></strong></p>
+<p><img src="https://lh3.googleusercontent.com/-OUfSmeGBKPs/U1MSJcBaZ4I/AAAAAAADd68/qHD2JIWWXiA/s800/Tiling%2520Concept.jpg" alt="I used Tiling to make to make the high resolution Half Dome image feasible for web viewing, with panning and zoom navigation. This is the same technique that Google Maps uses."> </p>
+
+<p><strong><em>I used Tiling to make to make the high resolution Half Dome image feasible for web viewing, with panning and zoom navigation. This is the same technique that Google Maps uses.</em></strong></p>
 
 <p>The tiling was done using a free Ruby script that automates the process, taking a few seconds to size, crop, and save the files in a format &amp; folder structure that can be read by code for automatically re-assembling the portions of the image that are in view of your screen. There are various Ruby and Python scripts available to do such things, although figuring out how to get them to work is tedious (I really don't know either programming language).</p>
 
