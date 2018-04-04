@@ -6,7 +6,7 @@ Use [Leaflet](http://leafletjs.com) to zoom in / pan around a [tiled](https://gi
 
 Interact with overlays that detail climbing routes, share experiences, and offer tips.
 
-See the current version here: [http://038dbbc.netsolhost.com/maps-gis/half-dome-map/](http://038dbbc.netsolhost.com/maps-gis/half-dome-map/ "Half Dome Interactive Map")
+See the current version here: [http://www.markpthomas.com/maps-gis/half-dome-map](http://www.markpthomas.com/maps-gis/half-dome-map "Half Dome Interactive Map")
 
 ## Development
 
